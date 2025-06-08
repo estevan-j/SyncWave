@@ -14,6 +14,7 @@ import { OrderlistPipe } from '@shared/pipe/orderlist.pipe';
 export class PlayListBodyComponent implements OnInit{
   //Puede ser de esta manera tambien tracks: TrackModel[]=[]
   tracks: Array<TrackModel>=[]
+  optionSort: {property: string | null, order:string} = {property: null, order: 'asc'}
 
   constructor(){
 
@@ -22,6 +23,15 @@ export class PlayListBodyComponent implements OnInit{
   ngOnInit(): void {
       const {data} : any = (dataRaw as any).default
       this.tracks = data;
+  }
+
+  changeSort(property: string): void{
+    const {order} = this.optionSort
+    this.optionSort={
+      property:property,
+      order: order == 'asc'? 'desc': 'asc'
+    }
+    console.log(this.optionSort);
   }
 
 }
