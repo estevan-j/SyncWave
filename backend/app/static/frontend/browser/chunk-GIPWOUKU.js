@@ -1,0 +1,1 @@
+import{I as n,O as m,a as t,h as i}from"./chunk-PXBOOWUE.js";var u=[],r=class o{static \u0275fac=function(e){return new(e||o)};static \u0275mod=i({type:o});static \u0275inj=t({imports:[m.forChild(u),m]})};var s=class o{static \u0275fac=function(e){return new(e||o)};static \u0275mod=i({type:o});static \u0275inj=t({imports:[n,r]})};export{s as HistoryModule};

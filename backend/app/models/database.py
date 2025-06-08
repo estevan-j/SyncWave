@@ -7,32 +7,41 @@ class User(db.Model):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)  # ✨ NUEVO CAMPO PASSWORD
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    playlists = db.relationship('Playlist', backref='owner', lazy=True, cascade='all, delete-orphan')
+    favorite_songs = db.relationship('FavoriteSong', backref='user', lazy=True, cascade='all, delete-orphan')
     messages = db.relationship('ChatMessage', backref='author', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
             'id': self.id,
-            'username': self.username,
             'email': self.email,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 class Song(db.Model):
     __tablename__ = 'songs'
     
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    artist = db.Column(db.String(100), nullable=False)
-    album = db.Column(db.String(100))
-    duration = db.Column(db.Integer)  # in seconds
-    file_path = db.Column(db.String(500))
+    title = db.Column(db.String(200), nullable=False)          # "name" del JSON
+    artist = db.Column(db.String(100), nullable=False)         # "artist.name" simplificado
+    album = db.Column(db.String(100))                          # "album" del JSON
+    duration = db.Column(db.Integer)                           # "duration.end" del JSON (en segundos)
+    file_path = db.Column(db.String(500))                      # "url" del JSON
+    cover_url = db.Column(db.String(500))                      # "cover" del JSON ✨
+    artist_name = db.Column(db.String(100))                    # "artist.name" completo ✨
+    artist_nickname = db.Column(db.String(100))                # "artist.nickname" del JSON ✨
+    nationality = db.Column(db.String(10))                     # "artist.nationality" del JSON ✨
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    favorited_by = db.relationship('FavoriteSong', backref='song', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -42,47 +51,32 @@ class Song(db.Model):
             'album': self.album,
             'duration': self.duration,
             'file_path': self.file_path,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'cover_url': self.cover_url,
+            'artist_name': self.artist_name,
+            'artist_nickname': self.artist_nickname,
+            'nationality': self.nationality,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
-# Association table for many-to-many relationship between playlists and songs
-playlist_songs = db.Table('playlist_songs',
-    db.Column('playlist_id', db.Integer, db.ForeignKey('playlists.id'), primary_key=True),
-    db.Column('song_id', db.Integer, db.ForeignKey('songs.id'), primary_key=True)
-)
-
-class Playlist(db.Model):
-    __tablename__ = 'playlists'
+class FavoriteSong(db.Model):
+    __tablename__ = 'favorite_songs'
     
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    song_id = db.Column(db.Integer, db.ForeignKey('songs.id'), nullable=False)
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Many-to-many relationship with songs
-    songs = db.relationship('Song', secondary=playlist_songs, lazy='subquery',
-                           backref=db.backref('playlists', lazy=True))
-    
-    def add_song(self, song):
-        """Add a song to the playlist if it's not already there"""
-        if song not in self.songs:
-            self.songs.append(song)
-            
-    def remove_song(self, song):
-        """Remove a song from the playlist if it exists"""
-        if song in self.songs:
-            self.songs.remove(song)
+    # Constraint para evitar duplicados
+    __table_args__ = (db.UniqueConstraint('user_id', 'song_id', name='unique_user_song'),)
     
     def to_dict(self):
         return {
             'id': self.id,
-            'name': self.name,
-            'description': self.description,
             'user_id': self.user_id,
-            'songs': [song.to_dict() for song in self.songs],
-            'song_count': len(self.songs),
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'song_id': self.song_id,
+            'added_at': self.added_at.isoformat() if self.added_at else None,
+            'song': self.song.to_dict() if self.song else None
         }
 
 class ChatMessage(db.Model):
@@ -98,7 +92,7 @@ class ChatMessage(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'username': self.author.username if self.author else 'Unknown',
+            'email': self.author.email if self.author else 'Unknown',
             'message': self.message,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'room': self.room

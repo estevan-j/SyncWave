@@ -1,90 +1,144 @@
 from flask import Blueprint, request, jsonify
-from app.models.user import User
+from app.models.database import db, User
 from app.services.user_service import UserService
 from app.utils.responses import ApiResponse
 from app.utils.validators import Validators
+from werkzeug.security import generate_password_hash, check_password_hash
 
 users_bp = Blueprint('users', __name__)
-
-# Simulamos una base de datos en memoria
-users_db = []
-user_id_counter = 1
 
 @users_bp.route('/', methods=['GET'])
 def get_users():
     """Get all users"""
-    return ApiResponse.success([user.to_dict() for user in users_db])
+    users = User.query.all()
+    return ApiResponse.success([user.to_dict() for user in users])
 
 @users_bp.route('/', methods=['POST'])
 def create_user():
     """Create a new user"""
-    global user_id_counter
     data = request.get_json()
     
-    # Validaciones usando el servicio
-    errors = UserService.validate_user_data(data)
-    if errors:
-        return ApiResponse.error('; '.join(errors), 400)
+    # Validaciones básicas
+    if not data or 'email' not in data or 'password' not in data:
+        return ApiResponse.error('Email and password are required', 400)
     
     if not Validators.validate_email(data['email']):
         return ApiResponse.error('Invalid email format', 400)
     
     # Verificar si el email ya existe
-    if any(user.email == data['email'] for user in users_db):
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
         return ApiResponse.error('Email already exists', 400)
     
-    # Crear usuario
-    user = User(
-        id=user_id_counter,
-        username=data['username'],
-        email=data['email']
-    )
+    # Validar longitud de password
+    if len(data['password']) < 6:
+        return ApiResponse.error('Password must be at least 6 characters long', 400)
     
-    users_db.append(user)
-    user_id_counter += 1
-    
-    return ApiResponse.success(user.to_dict(), 'User created successfully')
+    try:
+        # Crear usuario con password hasheado
+        user = User(
+            email=data['email'],
+            password=generate_password_hash(data['password'])
+        )
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        return ApiResponse.success(user.to_dict(), 'User created successfully')
+        
+    except Exception as e:
+        db.session.rollback()
+        return ApiResponse.error(f"Error creating user: {str(e)}", 500)
 
 @users_bp.route('/<int:user_id>', methods=['GET'])
 def get_user(user_id):
     """Get a specific user by ID"""
-    user = next((u for u in users_db if u.id == user_id), None)
-    if not user:
-        return ApiResponse.error('User not found', 404)
-    
+    user = User.query.get_or_404(user_id)
     return ApiResponse.success(user.to_dict())
 
 @users_bp.route('/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     """Update a user"""
-    user = next((u for u in users_db if u.id == user_id), None)
-    if not user:
-        return ApiResponse.error('User not found', 404)
-    
+    user = User.query.get_or_404(user_id)
     data = request.get_json()
     
-    if 'username' in data:
-        if len(data['username']) < 3:
-            return ApiResponse.error('Username must be at least 3 characters', 400)
-        user.username = data['username']
+    try:
+        if 'email' in data:
+            if not Validators.validate_email(data['email']):
+                return ApiResponse.error('Invalid email format', 400)
+            # Verificar que el nuevo email no esté en uso por otro usuario
+            existing_user = User.query.filter_by(email=data['email']).first()
+            if existing_user and existing_user.id != user_id:
+                return ApiResponse.error('Email already exists', 400)
+            user.email = data['email']
         
-    if 'email' in data:
-        if not Validators.validate_email(data['email']):
-            return ApiResponse.error('Invalid email format', 400)
-        # Verificar que el nuevo email no esté en uso por otro usuario
-        if any(u.email == data['email'] and u.id != user_id for u in users_db):
-            return ApiResponse.error('Email already exists', 400)
-        user.email = data['email']
-    
-    return ApiResponse.success(user.to_dict(), 'User updated successfully')
+        if 'password' in data:
+            if len(data['password']) < 6:
+                return ApiResponse.error('Password must be at least 6 characters long', 400)
+            user.password = generate_password_hash(data['password'])
+        
+        db.session.commit()
+        return ApiResponse.success(user.to_dict(), 'User updated successfully')
+        
+    except Exception as e:
+        db.session.rollback()
+        return ApiResponse.error(f"Error updating user: {str(e)}", 500)
 
 @users_bp.route('/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     """Delete a user"""
-    global users_db
-    user = next((u for u in users_db if u.id == user_id), None)
-    if not user:
-        return ApiResponse.error('User not found', 404)
+    user = User.query.get_or_404(user_id)
     
-    users_db = [u for u in users_db if u.id != user_id]
-    return ApiResponse.success(None, 'User deleted successfully')
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        return ApiResponse.success({}, 'User deleted successfully')
+        
+    except Exception as e:
+        db.session.rollback()
+        return ApiResponse.error(f"Error deleting user: {str(e)}", 500)
+
+@users_bp.route('/login', methods=['POST'])
+def login():
+    """Login user"""
+    data = request.get_json()
+    
+    if not data or 'email' not in data or 'password' not in data:
+        return ApiResponse.error('Email and password are required', 400)
+    
+    user = User.query.filter_by(email=data['email']).first()
+    
+    if not user or not check_password_hash(user.password, data['password']):
+        return ApiResponse.error('Invalid email or password', 401)
+    
+    return ApiResponse.success({
+        'user': user.to_dict(),
+        'message': 'Login successful'
+    })
+
+@users_bp.route('/check-email', methods=['POST'])
+def check_email():
+    """Check if email exists"""
+    data = request.get_json()
+    
+    if not data or 'email' not in data:
+        return ApiResponse.error('Email is required', 400)
+    
+    existing_user = User.query.filter_by(email=data['email']).first()
+    
+    return ApiResponse.success({
+        'email': data['email'],
+        'exists': existing_user is not None
+    })
+
+@users_bp.route('/search', methods=['GET'])
+def search_users():
+    """Search users by email"""
+    query = request.args.get('q', '').lower()
+    
+    if len(query) < 2:
+        return ApiResponse.error('Search query must be at least 2 characters', 400)
+    
+    users = User.query.filter(User.email.contains(query)).all()
+    
+    return ApiResponse.success([user.to_dict() for user in users])
