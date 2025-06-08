@@ -32,7 +32,7 @@ export class SideBarComponent implements OnInit {
       {
         name: 'Home', //S redirige al localhost
         icon: 'uil uil-estate',
-        router: ['/']  
+        router: ['/', 'auth']  
       },
       {
         name: 'Buscar',  //Se redirige al historial de canciones

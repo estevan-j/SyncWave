@@ -1,7 +1,7 @@
 <!-- Diseño del mode (small)-->
  <!--el ngfor de la section generic html se dirige en este lugar-->
 <div *ngIf="mode==='small'" class="card-player player-small">
-    <img [src]="track.cover" [alt]="track.name" class="cover">
+    <img appImgBroken [customImg]="'https://i.pinimg.com/736x/69/d5/3e/69d53ef9520b57a5e2af1b1387807fc7.jpg'" [src]="track.cover" [alt]="track.name" class="cover">
     <div class="content-player">
         {{track.name}}
     </div>
@@ -18,7 +18,7 @@
 <!-- Diseño del mode (big)-->
 <div *ngIf="mode==='big'" class="card-player player-big">
 
-    <img [src]="track.cover" alt="" class="cover">
+    <img appImgBroken [customImg]="'https://i.pinimg.com/736x/69/d5/3e/69d53ef9520b57a5e2af1b1387807fc7.jpg'" [src]="track.cover" alt="" class="cover">
 
     <div class="content-player">
         <div class="title-track">{{track.name}}</div>
