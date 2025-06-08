@@ -4,8 +4,9 @@ Script para inicializar la base de datos con datos de ejemplo
 """
 
 from app import create_app
-from app.models.database import db, User, Song, Playlist, ChatMessage
+from app.models.database import db, User, Song, FavoriteSong, ChatMessage
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 def init_sample_data():
     """Initialize database with sample data"""
@@ -24,10 +25,10 @@ def init_sample_data():
         
         # Crear usuarios de ejemplo
         users = [
-            User(username='admin', email='admin@musicapp.com'),
-            User(username='musiclover', email='music@example.com'),
-            User(username='dj_master', email='dj@example.com'),
-            User(username='listener1', email='listener1@example.com')
+            User(email='admin@musicapp.com', password=generate_password_hash('admin123')),
+            User(email='musiclover@example.com', password=generate_password_hash('music123')),
+            User(email='djmaster@example.com', password=generate_password_hash('dj123')),
+            User(email='listener1@example.com', password=generate_password_hash('listen123'))
         ]
         
         for user in users:
@@ -36,16 +37,88 @@ def init_sample_data():
         db.session.commit()
         print(f"Created {len(users)} users")
         
-        # Crear canciones de ejemplo
+        # Crear canciones de ejemplo con nuevos campos
         songs = [
-            Song(title='Bohemian Rhapsody', artist='Queen', album='A Night at the Opera', duration=355),
-            Song(title='Stairway to Heaven', artist='Led Zeppelin', album='Led Zeppelin IV', duration=482),
-            Song(title='Hotel California', artist='Eagles', album='Hotel California', duration=391),
-            Song(title='Imagine', artist='John Lennon', album='Imagine', duration=183),
-            Song(title='Billie Jean', artist='Michael Jackson', album='Thriller', duration=294),
-            Song(title='Like a Rolling Stone', artist='Bob Dylan', album='Highway 61 Revisited', duration=369),
-            Song(title='Smells Like Teen Spirit', artist='Nirvana', album='Nevermind', duration=301),
-            Song(title='What\'s Going On', artist='Marvin Gaye', album='What\'s Going On', duration=232)
+            Song(
+                title='Bohemian Rhapsody', 
+                artist='Queen', 
+                album='A Night at the Opera', 
+                duration=355,
+                cover_url='https://example.com/covers/bohemian_rhapsody.jpg',
+                artist_name='Queen',
+                artist_nickname='The Champions',
+                nationality='UK'
+            ),
+            Song(
+                title='Stairway to Heaven', 
+                artist='Led Zeppelin', 
+                album='Led Zeppelin IV', 
+                duration=482,
+                cover_url='https://example.com/covers/stairway_to_heaven.jpg',
+                artist_name='Led Zeppelin',
+                artist_nickname='Zeppelin',
+                nationality='UK'
+            ),
+            Song(
+                title='Hotel California', 
+                artist='Eagles', 
+                album='Hotel California', 
+                duration=391,
+                cover_url='https://example.com/covers/hotel_california.jpg',
+                artist_name='Eagles',
+                artist_nickname='The Eagles',
+                nationality='US'
+            ),
+            Song(
+                title='Imagine', 
+                artist='John Lennon', 
+                album='Imagine', 
+                duration=183,
+                cover_url='https://example.com/covers/imagine.jpg',
+                artist_name='John Lennon',
+                artist_nickname='Johnny',
+                nationality='UK'
+            ),
+            Song(
+                title='Billie Jean', 
+                artist='Michael Jackson', 
+                album='Thriller', 
+                duration=294,
+                cover_url='https://example.com/covers/billie_jean.jpg',
+                artist_name='Michael Jackson',
+                artist_nickname='MJ',
+                nationality='US'
+            ),
+            Song(
+                title='Like a Rolling Stone', 
+                artist='Bob Dylan', 
+                album='Highway 61 Revisited', 
+                duration=369,
+                cover_url='https://example.com/covers/like_a_rolling_stone.jpg',
+                artist_name='Bob Dylan',
+                artist_nickname='Dylan',
+                nationality='US'
+            ),
+            Song(
+                title='Smells Like Teen Spirit', 
+                artist='Nirvana', 
+                album='Nevermind', 
+                duration=301,
+                cover_url='https://example.com/covers/smells_like_teen_spirit.jpg',
+                artist_name='Nirvana',
+                artist_nickname='Nirvana',
+                nationality='US'
+            ),
+            Song(
+                title='What\'s Going On', 
+                artist='Marvin Gaye', 
+                album='What\'s Going On', 
+                duration=232,
+                cover_url='https://example.com/covers/whats_going_on.jpg',
+                artist_name='Marvin Gaye',
+                artist_nickname='Marvin',
+                nationality='US'
+            )
         ]
         
         for song in songs:
@@ -54,49 +127,35 @@ def init_sample_data():
         db.session.commit()
         print(f"Created {len(songs)} songs")
         
-        # Crear playlists de ejemplo
-        admin_user = User.query.filter_by(username='admin').first()
-        musiclover_user = User.query.filter_by(username='musiclover').first()
+        # Crear canciones favoritas de ejemplo
+        admin_user = User.query.filter_by(email='admin@musicapp.com').first()
+        musiclover_user = User.query.filter_by(email='musiclover@example.com').first()
         
-        playlists = [
-            Playlist(name='Classic Rock Hits', description='Best classic rock songs', user_id=admin_user.id),
-            Playlist(name='80s Favorites', description='Greatest hits from the 80s', user_id=musiclover_user.id),
-            Playlist(name='Chill Vibes', description='Relaxing songs for any mood', user_id=admin_user.id)
-        ]
-        
-        for playlist in playlists:
-            db.session.add(playlist)
-        
-        db.session.commit()
-        print(f"Created {len(playlists)} playlists")
-        
-        # Agregar canciones a playlists
-        classic_rock = Playlist.query.filter_by(name='Classic Rock Hits').first()
-        eighties = Playlist.query.filter_by(name='80s Favorites').first()
-        chill = Playlist.query.filter_by(name='Chill Vibes').first()
-        
-        # Classic Rock playlist
+        # Agregar algunas canciones como favoritas
         bohemian = Song.query.filter_by(title='Bohemian Rhapsody').first()
         stairway = Song.query.filter_by(title='Stairway to Heaven').first()
         hotel = Song.query.filter_by(title='Hotel California').first()
-        
-        if classic_rock and bohemian and stairway and hotel:
-            classic_rock.songs.extend([bohemian, stairway, hotel])
-        
-        # 80s playlist
-        billie = Song.query.filter_by(title='Billie Jean').first()
-        if eighties and billie:
-            eighties.songs.append(billie)
-        
-        # Chill playlist
         imagine = Song.query.filter_by(title='Imagine').first()
-        whats_going = Song.query.filter_by(title='What\'s Going On').first()
+        billie = Song.query.filter_by(title='Billie Jean').first()
         
-        if chill and imagine and whats_going:
-            chill.songs.extend([imagine, whats_going])
+        favorites = []
+        if admin_user and bohemian:
+            favorites.append(FavoriteSong(user_id=admin_user.id, song_id=bohemian.id))
+        if admin_user and stairway:
+            favorites.append(FavoriteSong(user_id=admin_user.id, song_id=stairway.id))
+        if admin_user and hotel:
+            favorites.append(FavoriteSong(user_id=admin_user.id, song_id=hotel.id))
+        
+        if musiclover_user and billie:
+            favorites.append(FavoriteSong(user_id=musiclover_user.id, song_id=billie.id))
+        if musiclover_user and imagine:
+            favorites.append(FavoriteSong(user_id=musiclover_user.id, song_id=imagine.id))
+        
+        for favorite in favorites:
+            db.session.add(favorite)
         
         db.session.commit()
-        print("Added songs to playlists")
+        print(f"Created {len(favorites)} favorite songs")
         
         # Crear algunos mensajes de chat de ejemplo
         chat_messages = [
@@ -124,13 +183,22 @@ def init_sample_data():
         print("\nSample data created:")
         print(f"- Users: {User.query.count()}")
         print(f"- Songs: {Song.query.count()}")
-        print(f"- Playlists: {Playlist.query.count()}")
+        print(f"- Favorite Songs: {FavoriteSong.query.count()}")
         print(f"- Chat Messages: {ChatMessage.query.count()}")
+        
+        print("\nSample users created:")
+        for user in User.query.all():
+            print(f"- {user.email} (ID: {user.id})")
         
         print("\nYou can now:")
         print("1. Start the server: python app.py")
         print("2. Access the API at: http://localhost:5000")
-        print("3. Test the chat with WebSocket clients")
+        print("3. Test the endpoints:")
+        print("   - GET /api/users")
+        print("   - GET /api/music/songs")
+        print("   - GET /api/favorites/user/1")
+        print("   - POST /api/users/login (with email and password)")
+        print("4. Test the chat with WebSocket clients")
 
 if __name__ == '__main__':
     init_sample_data()
