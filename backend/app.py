@@ -35,13 +35,15 @@ def create_app():
         'http://localhost:8080',    # Vue CLI default
         'http://127.0.0.1:3000',
         'http://127.0.0.1:5173',
+        'http://127.0.0.1:57313',
         'http://127.0.0.1:8080'
     ])
 
     # Initialize SocketIO
     socketio = SocketIO(app, cors_allowed_origins=[
         "http://localhost:5000",
-        "http://127.0.0.1:5j000"
+        "http://127.0.0.1:5000"
+        "http://127.0.0.1:57313"
     ], async_mode='threading')
     # Register blueprints
     from app.routes.users import users_bp
