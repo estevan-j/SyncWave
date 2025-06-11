@@ -37,8 +37,7 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
     private favoritesService: FavoritesService,
     private musicUploadService: MusicUploadService,
     private http: HttpClient
-  ) { }
-  ngOnInit(): void {
+  ) { } ngOnInit(): void {
     console.log('🎵 PlayListBodyComponent initialized - Loading tracks from API');
     this.loadTracks();
 
@@ -55,6 +54,16 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
       .subscribe(favorites => {
         console.log('🔥 Favorites updated:', favorites);
         this.favoriteIds = favorites;
+      });
+
+    // Suscribirse a actualizaciones de canciones
+    this.tracksService.tracksRefresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(shouldRefresh => {
+        if (shouldRefresh) {
+          console.log('🔄 PlayListBody: Tracks refresh triggered, reloading...');
+          this.loadTracks();
+        }
       });
   }
 
@@ -252,10 +261,11 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
                     console.error('❌ Error removing from favorites:', error);
                   }
                 });
-            }
-
-            // Remover de la lista local
+            }            // Remover de la lista local
             this.tracks = this.tracks.filter(t => t._id !== track._id);
+
+            // Notificar que las canciones han cambiado
+            this.tracksService.refreshTracks();
           },
           error: (error: any) => {
             console.error('❌ Error deleting song:', error);

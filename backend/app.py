@@ -20,7 +20,7 @@ def create_app():
     # Configuration
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key')
     app.config['DEBUG'] = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
-    app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
+    app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'assets')
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
     # Database configuration
@@ -28,9 +28,7 @@ def create_app():
         'DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    db.init_app(app)
-
-    # Enable CORS for frontend consumption
+    db.init_app(app)    # Enable CORS for frontend consumption
     CORS(app, origins=[
         'http://localhost:5000',    # Backend/Frontend monolítico
         'http://127.0.0.1:5000',
@@ -41,17 +39,16 @@ def create_app():
         'http://127.0.0.1:5173',
         'http://127.0.0.1:57313',
         'http://127.0.0.1:8080'
-    ])
-
-    # Initialize SocketIO
-    socketio = SocketIO(app, cors_allowed_origins=[
-        "http://localhost:5000",
-        "http://127.0.0.1:5000",
-        "http://localhost:3000",    # Para desarrollo
-        "http://127.0.0.1:3000"
-        "http://127.0.0.1:5000"
-        "http://127.0.0.1:57313"
-    ], async_mode='threading')
+    ])    # Initialize SocketIO with simplified configuration
+    socketio = SocketIO(app,
+                        cors_allowed_origins="*",
+                        async_mode='threading',
+                        logger=True,
+                        engineio_logger=False,
+                        transports=['polling'],
+                        ping_timeout=60,
+                        ping_interval=25
+                        )
 
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(music_bp, url_prefix='/api/music')
@@ -98,47 +95,44 @@ def create_app():
                 'status': 'warning',
                 'build_command': 'cd fronted && npm run build',
                 'static_folder': app.static_folder
-            })
+            })    # Serve uploaded files
 
-    # Serve static assets (music files)
     @app.route('/assets/<path:filename>')
     def serve_assets(filename):
-        """Serve music files from assets directory"""
+        """Serve uploaded music files from assets folder"""
         try:
-            # Ruta donde están tus archivos de música
-            assets_path = os.path.join(os.path.dirname(__file__), 'assets')
-            return send_file(os.path.join(assets_path, filename))
-        except FileNotFoundError:
-            return jsonify({
-                'success': False,
-                'message': f'Audio file not found: {filename}',
-                'error_code': 'AUDIO_FILE_NOT_FOUND'
-            }), 404
-        except Exception as e:
-            return jsonify({
-                'success': False,
-                'message': 'Error serving audio file',
-                'error_code': 'AUDIO_SERVE_ERROR'
-            }), 500
+            # Construir la ruta absoluta a la carpeta assets
+            upload_folder = app.config['UPLOAD_FOLDER']
+            if not os.path.isabs(upload_folder):
+                # Si es una ruta relativa, hacerla relativa al directorio del backend
+                upload_path = os.path.join(
+                    os.path.dirname(__file__), upload_folder)
+            else:
+                upload_path = upload_folder
 
-    # Serve uploaded files
-    @app.route('/uploads/<path:filename>')
-    def serve_uploads(filename):
-        """Serve uploaded music files"""
-        try:
-            upload_path = app.config['UPLOAD_FOLDER']
-            return send_file(os.path.join(upload_path, filename))
+            file_path = os.path.join(upload_path, filename)
+
+            # Verificar que el archivo existe
+            if not os.path.exists(file_path):
+                return jsonify({
+                    'success': False,
+                    'message': f'Asset file not found: {filename}',
+                    'error_code': 'ASSET_FILE_NOT_FOUND'
+                }), 404
+
+            return send_file(file_path)
         except FileNotFoundError:
             return jsonify({
                 'success': False,
-                'message': f'Uploaded file not found: {filename}',
-                'error_code': 'UPLOAD_FILE_NOT_FOUND'
+                'message': f'Asset file not found: {filename}',
+                'error_code': 'ASSET_FILE_NOT_FOUND'
             }), 404
         except Exception as e:
+            print(f"Error serving asset file {filename}: {str(e)}")
             return jsonify({
                 'success': False,
-                'message': 'Error serving uploaded file',
-                'error_code': 'UPLOAD_SERVE_ERROR'
+                'message': 'Error serving asset file',
+                'error_code': 'ASSET_SERVE_ERROR'
             }), 500
 
     # Error handlers

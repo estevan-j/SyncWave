@@ -142,3 +142,59 @@ def search_users():
     users = User.query.filter(User.email.contains(query)).all()
     
     return ApiResponse.success([user.to_dict() for user in users])
+
+@users_bp.route('/verify-email', methods=['POST'])
+def verify_email():
+    """Verify if email exists for password recovery"""
+    data = request.get_json()
+    
+    if not data or 'email' not in data:
+        return ApiResponse.error('Email is required', 400)
+    
+    if not Validators.validate_email(data['email']):
+        return ApiResponse.error('Invalid email format', 400)
+    
+    # Check if user exists
+    user = User.query.filter_by(email=data['email']).first()
+    
+    if not user:
+        return ApiResponse.error('No account found with this email address', 404)
+    
+    return ApiResponse.success({
+        'email': data['email'],
+        'exists': True,
+        'message': 'Email verified successfully'
+    })
+
+@users_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """Reset user password"""
+    data = request.get_json()
+    
+    if not data or 'email' not in data or 'newPassword' not in data:
+        return ApiResponse.error('Email and new password are required', 400)
+    
+    if not Validators.validate_email(data['email']):
+        return ApiResponse.error('Invalid email format', 400)
+    
+    if len(data['newPassword']) < 6:
+        return ApiResponse.error('Password must be at least 6 characters long', 400)
+    
+    try:
+        # Find user by email
+        user = User.query.filter_by(email=data['email']).first()
+        
+        if not user:
+            return ApiResponse.error('No account found with this email address', 404)
+        
+        # Update password
+        user.password = generate_password_hash(data['newPassword'])
+        db.session.commit()
+        
+        return ApiResponse.success({
+            'message': 'Password updated successfully'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return ApiResponse.error(f"Error updating password: {str(e)}", 500)

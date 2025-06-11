@@ -31,12 +31,12 @@ EOSQL
 echo "✅ Extensiones y funciones creadas correctamente"
 
 # Crear tablas iniciales según el nuevo diagrama (FAVORITE_SONGS)
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    -- Tabla de usuarios (ACTUALIZADA con password)
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL    -- Tabla de usuarios (ACTUALIZADA con password y username)
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         email VARCHAR(120) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,        -- ✨ NUEVO CAMPO PASSWORD
+        username VARCHAR(50),                  -- ✨ NUEVO CAMPO USERNAME
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );

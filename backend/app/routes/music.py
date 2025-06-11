@@ -217,55 +217,57 @@ def upload_song():
         # Check if file is present
         if 'file' not in request.files:
             return ApiResponse.error('No file provided', 400)
-        
+
         file = request.files['file']
         if file.filename == '':
             return ApiResponse.error('No file selected', 400)
-        
+
         # Validate file type
         if not MusicService.allowed_file(file.filename):
             return ApiResponse.error('Invalid file type. Allowed: mp3, wav, flac, ogg, m4a, aac', 400)
-        
+
         # Get form data
         title = request.form.get('title', '').strip()
         artist = request.form.get('artist', '').strip()
-        
+
         if not title:
             return ApiResponse.error('Title is required', 400)
         if not artist:
             return ApiResponse.error('Artist is required', 400)
-        
+
         # Optional fields
         album = request.form.get('album', '').strip() or None
         duration = request.form.get('duration')
         cover_url = request.form.get('cover_url', '').strip() or None
         artist_name = request.form.get('artist_name', '').strip() or artist
-        artist_nickname = request.form.get('artist_nickname', '').strip() or None
+        artist_nickname = request.form.get(
+            'artist_nickname', '').strip() or None
         nationality = request.form.get('nationality', '').strip() or None
-        
+
         # Convert duration to int if provided
         if duration:
             try:
                 duration = int(float(duration))
             except (ValueError, TypeError):
                 duration = None
-        
+
         # Check for duplicates
-        existing_song = MusicService.check_duplicate_song(db, Song, title, artist)
+        existing_song = MusicService.check_duplicate_song(
+            db, Song, title, artist)
         if existing_song:
             return ApiResponse.error('Song already exists with same title and artist', 409)
-        
+
         # Save file
         upload_folder = current_app.config['UPLOAD_FOLDER']
         file_path = MusicService.save_file(file, upload_folder)
-        
+
         if not file_path:
             return ApiResponse.error('Failed to save file', 500)
-        
-        # Create relative path for URL
-        relative_path = file_path.replace(upload_folder, '').lstrip(os.sep).replace(os.sep, '/')
-        file_url = f"http://localhost:5000/uploads/{relative_path}"
-        
+          # Create relative path for URL
+        relative_path = file_path.replace(
+            upload_folder, '').lstrip(os.sep).replace(os.sep, '/')
+        file_url = f"http://localhost:5000/assets/{relative_path}"
+
         # Create song record
         song = Song(
             title=title,
@@ -278,12 +280,12 @@ def upload_song():
             artist_nickname=artist_nickname,
             nationality=nationality
         )
-        
+
         db.session.add(song)
         db.session.commit()
-        
+
         return ApiResponse.success(song.to_dict(), 'Song uploaded successfully')
-        
+
     except Exception as e:
         db.session.rollback()
         return ApiResponse.error(f"Error uploading song: {str(e)}", 500)
@@ -294,7 +296,7 @@ def update_song_with_file(song_id):
     """Update a song with optional file upload"""
     try:
         song = Song.query.get_or_404(song_id)
-        
+
         # Handle file upload if present
         file_url = song.file_path  # Keep existing file by default
         if 'file' in request.files:
@@ -303,16 +305,16 @@ def update_song_with_file(song_id):
                 # Validate file type
                 if not MusicService.allowed_file(file.filename):
                     return ApiResponse.error('Invalid file type. Allowed: mp3, wav, flac, ogg, m4a, aac', 400)
-                
+
                 # Save new file
                 upload_folder = current_app.config['UPLOAD_FOLDER']
                 file_path = MusicService.save_file(file, upload_folder)
-                
                 if file_path:
                     # Create relative path for URL
-                    relative_path = file_path.replace(upload_folder, '').lstrip(os.sep).replace(os.sep, '/')
-                    file_url = f"http://localhost:5000/uploads/{relative_path}"
-        
+                    relative_path = file_path.replace(
+                        upload_folder, '').lstrip(os.sep).replace(os.sep, '/')
+                    file_url = f"http://localhost:5000/assets/{relative_path}"
+
         # Get form data and update fields if provided
         if request.form.get('title'):
             song.title = request.form.get('title').strip()
@@ -330,16 +332,17 @@ def update_song_with_file(song_id):
         if request.form.get('artist_name'):
             song.artist_name = request.form.get('artist_name').strip()
         if request.form.get('artist_nickname'):
-            song.artist_nickname = request.form.get('artist_nickname').strip() or None
+            song.artist_nickname = request.form.get(
+                'artist_nickname').strip() or None
         if request.form.get('nationality'):
             song.nationality = request.form.get('nationality').strip() or None
-        
+
         # Update file path if changed
         song.file_path = file_url
-        
+
         db.session.commit()
         return ApiResponse.success(song.to_dict(), 'Song updated successfully')
-        
+
     except Exception as e:
         db.session.rollback()
         return ApiResponse.error(f"Error updating song: {str(e)}", 500)
@@ -351,13 +354,14 @@ def update_song_metadata(song_id):
     try:
         song = Song.query.get_or_404(song_id)
         data = request.get_json()
-        
+
         if not data:
             return ApiResponse.error('No data provided', 400)
-        
+
         # Actualizar campos permitidos
-        updateable_fields = ['title', 'artist', 'album', 'cover_url', 'artist_name', 'artist_nickname', 'nationality']
-        
+        updateable_fields = ['title', 'artist', 'album', 'cover_url',
+                             'artist_name', 'artist_nickname', 'nationality']
+
         for field in updateable_fields:
             if field in data and data[field] is not None:
                 # Sanitizar strings
@@ -367,10 +371,10 @@ def update_song_metadata(song_id):
                         setattr(song, field, clean_value)
                 else:
                     setattr(song, field, data[field])
-        
+
         db.session.commit()
         return ApiResponse.success(song.to_dict(), 'Song metadata updated successfully')
-        
+
     except Exception as e:
         db.session.rollback()
         return ApiResponse.error(f"Error updating song metadata: {str(e)}", 500)

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TrackModel } from '@core/models/tracks.model';
 
@@ -9,6 +9,10 @@ import { TrackModel } from '@core/models/tracks.model';
 })
 export class TracksService {
     private readonly API_URL = 'http://localhost:5000/api/music';
+
+    // Subject para notificar cuando las canciones necesitan actualizarse
+    private tracksRefreshSubject = new BehaviorSubject<boolean>(false);
+    public tracksRefresh$ = this.tracksRefreshSubject.asObservable();
 
     constructor(private http: HttpClient) { }
 
@@ -143,11 +147,18 @@ export class TracksService {
                         created_at: song.created_at || new Date().toISOString(),
                         explicit: song.explicit || false
                     };
-                });
-
-                console.log('✅ Search results transformed:', transformedTracks.length, 'tracks');
+                }); console.log('✅ Search results transformed:', transformedTracks.length, 'tracks');
                 return transformedTracks;
             })
         );
+    }
+
+    /**
+     * Notificar que las canciones necesitan actualizarse
+     * Útil después de subir, editar o eliminar canciones
+     */
+    refreshTracks(): void {
+        console.log('🔄 TracksService: Triggering tracks refresh');
+        this.tracksRefreshSubject.next(true);
     }
 }

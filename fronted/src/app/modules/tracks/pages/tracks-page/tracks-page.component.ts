@@ -28,12 +28,22 @@ export class TracksPageComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute
   ) {
     console.warn('🏗️ TracksPageComponent constructor called');
-  }
-
-  ngOnInit(): void {
+  } ngOnInit(): void {
     console.warn('🚀 TracksPageComponent ngOnInit - Starting initialization');
     this.checkForSearchParams();
     this.loadInitialTracks();
+
+    // Suscribirse a actualizaciones de canciones
+    this.tracksService.tracksRefresh$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(shouldRefresh => {
+        if (shouldRefresh) {
+          console.log('🔄 TracksPage: Tracks refresh triggered, reloading...');
+          if (!this.isSearchMode) {
+            this.loadTracks();
+          }
+        }
+      });
   }
   ngOnDestroy(): void {
     console.log('🔥 TracksPageComponent destroyed');

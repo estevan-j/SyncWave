@@ -132,21 +132,23 @@ export class MusicUploadComponent implements OnInit, OnDestroy {
             file: this.selectedFile
         };
 
-        console.log('📤 Starting upload:', songData);
-
-        this.uploadService.uploadSong(songData).subscribe({
+        console.log('📤 Starting upload:', songData); this.uploadService.uploadSong(songData).subscribe({
             next: (response) => {
                 if (response) {
                     console.log('✅ Upload successful:', response);
                     this.resetForm();
-                    // TODO: Mostrar mensaje de éxito
-                    // TODO: Actualizar lista de canciones
+
+                    // Mostrar mensaje de éxito
+                    alert('¡Canción subida exitosamente! La lista se actualizará automáticamente.');
+
+                    // Actualizar lista de canciones
                     this.refreshTracksList();
                 }
             },
             error: (error) => {
                 console.error('❌ Upload failed:', error);
-                // TODO: Mostrar mensaje de error
+                // Mostrar mensaje de error
+                alert(`Error al subir la canción: ${error.message || 'Error desconocido'}`);
             }
         });
     }
@@ -162,13 +164,11 @@ export class MusicUploadComponent implements OnInit, OnDestroy {
     cancelUpload(): void {
         // TODO: Implementar cancelación de subida
         this.resetForm();
-    }
-
-    // Actualizar lista de canciones
+    }    // Actualizar lista de canciones
     private refreshTracksList(): void {
-        // Esto podría ser un evento o servicio compartido
-        // Por ahora, simplemente recargar la página o emitir un evento
-        window.location.reload();
+        // Notificar a todos los componentes que escuchan que las canciones han cambiado
+        console.log('🔄 MusicUpload: Triggering tracks refresh after upload');
+        this.tracksService.refreshTracks();
     }
 
     // Getters para validación
