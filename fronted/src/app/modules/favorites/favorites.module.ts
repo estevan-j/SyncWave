@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FavoritesRoutingModule } from './favorites-routing.module';
 import { SharedModule } from '@shared/shared.module';
 import { FavoritesPageComponent } from './pages/favorites-page/favorites-page.component';
+import { LikedSongsPageComponent } from './pages/liked-songs-page/liked-songs-page.component';
 
 
 @NgModule({
@@ -13,7 +14,8 @@ import { FavoritesPageComponent } from './pages/favorites-page/favorites-page.co
     FavoritesRoutingModule,
     SharedModule,
     RouterModule,
-    FavoritesPageComponent
+    FavoritesPageComponent,
+    LikedSongsPageComponent
   ]
 })
 export class FavoritesModule { }

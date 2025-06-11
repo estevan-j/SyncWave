@@ -1,35 +1,36 @@
 <!-- Diseño del mode (small)-->
- <!--el ngfor de la section generic html se dirige en este lugar-->
 <div *ngIf="mode==='small'" class="card-player player-small">
-    <img appImgBroken [customImg]="'https://i.pinimg.com/736x/69/d5/3e/69d53ef9520b57a5e2af1b1387807fc7.jpg'" [src]="track.cover" [alt]="track.name" class="cover">
+    <img [src]="track.cover_url" [alt]="track.name" class="cover" (error)="onImageError($event)">
+
     <div class="content-player">
         {{track.name}}
     </div>
+
     <div class="buttons-player">
-        <button *ngIf="true" class="play-btn">
-            <i class="uil " [ngClass]="{'uil-play':true}"></i>
-        </button>
-        <button *ngIf="false" class="play-btn">
-            <i class="uil uil-play"></i>
+        <button class="play-btn" (click)="togglePlay()">
+            <i class="uil" [ngClass]="{
+                'uil-play': !isPlaying,
+                'uil-pause': isPlaying
+            }"></i>
         </button>
     </div>
 </div>
 
 <!-- Diseño del mode (big)-->
 <div *ngIf="mode==='big'" class="card-player player-big">
-
-    <img appImgBroken [customImg]="'https://i.pinimg.com/736x/69/d5/3e/69d53ef9520b57a5e2af1b1387807fc7.jpg'" [src]="track.cover" alt="" class="cover">
+    <img [src]="track.cover_url" [alt]="track.name" class="cover" (error)="onImageError($event)">
 
     <div class="content-player">
         <div class="title-track">{{track.name}}</div>
-        <div class="sub-title-track">{{track.name}}</div>
+        <div class="sub-title-track">{{track.artist}}</div>
     </div>
+
     <div class="buttons-player">
-        <button *ngIf="true" class="play-btn">
-            <i class="uil " [ngClass]="{'uil-play':true}"></i>
-        </button>
-        <button *ngIf="false" class="play-btn">
-            <i class="uil uil-play"></i>
+        <button class="play-btn" (click)="togglePlay()">
+            <i class="uil" [ngClass]="{
+                'uil-play': !isPlaying,
+                'uil-pause': isPlaying
+            }"></i>
         </button>
     </div>
 </div>

@@ -82,3 +82,177 @@
     right: 0;
     top: 13rem
 }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .card-player {
+        height: 4.5rem;
+    }
+
+    .card-player .cover {
+        width: 4.5rem;
+    }
+
+    .card-player .content-player {
+        padding: 0 0 0 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    .card-player .buttons-player {
+        width: 4.5rem;
+    }
+
+    .card-player .buttons-player .play-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .card-player.player-big {
+        height: 16rem;
+        padding: 0.8rem;
+    }
+
+    .card-player.player-big .cover {
+        height: 180px;
+    }
+
+    .card-player.player-big .buttons-player {
+        top: 11.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-player {
+        height: 4rem;
+        border-radius: 6px;
+    }
+
+    .card-player .cover {
+        width: 4rem;
+    }
+
+    .card-player .content-player {
+        padding: 0 0 0 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .card-player .buttons-player {
+        width: 4rem;
+    }
+
+    .card-player .buttons-player .play-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+
+    .card-player.player-big {
+        height: 14rem;
+        padding: 0.6rem;
+    }
+
+    .card-player.player-big .cover {
+        height: 160px;
+    }
+
+    .card-player.player-big .content-player {
+        padding: 0.4rem 0;
+    }
+
+    .card-player.player-big .buttons-player {
+        top: 10rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-player {
+        height: 3.5rem;
+        border-radius: 4px;
+    }
+
+    .card-player .cover {
+        width: 3.5rem;
+    }
+
+    .card-player .content-player {
+        padding: 0 0 0 0.4rem;
+        font-size: 0.8rem;
+    }
+
+    .card-player .buttons-player {
+        width: 3.5rem;
+    }
+
+    .card-player .buttons-player .play-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .card-player.player-big {
+        height: 12rem;
+        padding: 0.5rem;
+    }
+
+    .card-player.player-big .cover {
+        height: 140px;
+    }
+
+    .card-player.player-big .content-player {
+        padding: 0.3rem 0;
+        font-size: 0.8rem;
+    }
+
+    .card-player.player-big .content-player .sub-title-track {
+        font-size: 75%;
+    }
+
+    .card-player.player-big .buttons-player {
+        top: 8.5rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .card-player {
+        height: 3rem;
+    }
+
+    .card-player .cover {
+        width: 3rem;
+    }
+
+    .card-player .content-player {
+        padding: 0 0 0 0.3rem;
+        font-size: 0.75rem;
+    }
+
+    .card-player .buttons-player {
+        width: 3rem;
+    }
+
+    .card-player .buttons-player .play-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+
+    .card-player.player-big {
+        height: 10rem;
+        padding: 0.4rem;
+    }
+
+    .card-player.player-big .cover {
+        height: 120px;
+    }
+
+    .card-player.player-big .buttons-player {
+        top: 7rem;
+    }
+
+    .card-player.player-big .buttons-player .play-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9rem;
+    }
+}
