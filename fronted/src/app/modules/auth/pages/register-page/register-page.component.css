@@ -1,4 +1,5 @@
-.login-container {
+/* app/modules/auth/pages/register-page/register-page.component.css */
+.register-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,7 +9,7 @@
   padding: 20px;
 }
 
-.login-card {
+.register-card {
   background-color: #121212;
   border-radius: 8px;
   padding: 32px;
@@ -29,7 +30,7 @@
   margin-bottom: 16px;
 }
 
-.login-form h2 {
+.register-form h2 {
   font-size: 28px;
   margin-bottom: 28px;
   text-align: center;
@@ -72,7 +73,7 @@
   margin-top: 4px;
 }
 
-.login-button {
+.register-button {
   width: 100%;
   padding: 12px;
   border-radius: 500px;
@@ -86,12 +87,12 @@
   transition: all 0.3s ease;
 }
 
-.login-button:hover {
+.register-button:hover {
   background-color: #1ed760;
   transform: scale(1.02);
 }
 
-.login-button:disabled {
+.register-button:disabled {
   background-color: #535353;
   cursor: not-allowed;
   transform: none;
@@ -103,19 +104,19 @@
   margin: 32px 0;
 }
 
-.register-link, .forgot-password {
+.login-link {
   text-align: center;
   font-size: 14px;
   color: #b3b3b3;
 }
 
-.register-link a, .forgot-password a {
+.login-link a {
   color: #fff;
   text-decoration: underline;
   cursor: pointer;
 }
 
-.register-link a:hover, .forgot-password a:hover {
+.login-link a:hover {
   color: #1DB954;
 }
 
@@ -168,4 +169,26 @@
 
 .popup-button:hover {
   background-color: #1ed760;
+}
+
+/* Estilos responsivos */
+@media (max-width: 480px) {
+  .register-card {
+    padding: 24px;
+  }
+  
+  .register-form h2 {
+    font-size: 24px;
+    margin-bottom: 24px;
+  }
+  
+  .form-group input {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .register-button {
+    padding: 10px;
+    font-size: 14px;
+  }
 }

@@ -2,18 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { UserService } from '../../../../core/services/user.service';
 import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
-  selector: 'app-login-page',
-  templateUrl: './login-page.component.html',
-  styleUrls: ['./login-page.component.css'],
+  selector: 'app-register-page',
+  templateUrl: './register-page.component.html',
+  styleUrls: ['./register-page.component.css'],
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule]
 })
-export class LoginPageComponent implements OnInit {
-  loginForm: FormGroup;
+export class RegisterPageComponent implements OnInit {
+  registerForm: FormGroup;
   loading = false;
   showPopup = false;
   popupTitle = '';
@@ -23,42 +22,45 @@ export class LoginPageComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private userService: UserService,
     private apiService: ApiService
   ) {
-    this.loginForm = this.fb.group({
+    this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
-    });
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validator: this.passwordMatchValidator });
   }
 
-  ngOnInit(): void {
-    if (this.userService.isAuthenticated()) {
-      this.router.navigate(['/home']);
-    }
+  ngOnInit(): void { }
+
+  passwordMatchValidator(formGroup: FormGroup) {
+    const password = formGroup.get('password')?.value;
+    const confirmPassword = formGroup.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { mismatch: true };
   }
 
-  onLogin(): void {
-    if (this.loginForm.invalid) {
+  onRegister(): void {
+    if (this.registerForm.invalid) {
       return;
     }
 
     this.loading = true;
 
-    this.apiService.post('/api/users/login', this.loginForm.value)
+    const { email, password } = this.registerForm.value;
+
+    this.apiService.post('/api/users', { email, password })
       .subscribe({
         next: (response: any) => {
-          this.userService.setCurrentUser(response.user);
-          this.showSuccessPopup('Inicio de sesión exitoso', 'Bienvenido a Polimusic');
+          this.showSuccessPopup('Registro exitoso', 'Tu cuenta ha sido creada correctamente. Ahora puedes iniciar sesión.');
           setTimeout(() => {
-            this.router.navigate(['/home']);
+            this.router.navigate(['/auth/login']);
           }, 1500);
         },
         error: (error) => {
-          if (error.status === 401) {
-            this.showErrorPopup('Error de autenticación', 'Correo electrónico o contraseña incorrectos');
+          if (error.status === 400 && error.error.message === 'Email already exists') {
+            this.showErrorPopup('Error de registro', 'Este correo electrónico ya está en uso');
           } else {
-            this.showErrorPopup('Error', 'Ocurrió un error al intentar iniciar sesión');
+            this.showErrorPopup('Error', 'Ocurrió un error al intentar registrarte');
           }
           this.loading = false;
         },
@@ -69,12 +71,8 @@ export class LoginPageComponent implements OnInit {
   }
 
   // Resto de los métodos permanecen igual...
-  goToRegister(): void {
-    this.router.navigate(['/auth/register']);
-  }
-
-  goToForgotPassword(): void {
-    this.router.navigate(['/auth/forgot-password']);
+  goToLogin(): void {
+    this.router.navigate(['/auth/login']);
   }
 
   showSuccessPopup(title: string, message: string): void {
