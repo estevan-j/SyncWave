@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
   selector: 'app-register-page',
@@ -20,7 +19,7 @@ export class RegisterPageComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private http: HttpClient
+    private apiService: ApiService
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -46,7 +45,7 @@ export class RegisterPageComponent implements OnInit {
     
     const { email, password } = this.registerForm.value;
     
-    this.http.post(`${environment.apiUrl}/api/users`, { email, password })
+    this.apiService.post('/api/users', { email, password })
       .subscribe({
         next: (response: any) => {
           this.showSuccessPopup('Registro exitoso', 'Tu cuenta ha sido creada correctamente. Ahora puedes iniciar sesión.');
@@ -68,6 +67,7 @@ export class RegisterPageComponent implements OnInit {
       });
   }
 
+  // Resto de los métodos permanecen igual...
   goToLogin(): void {
     this.router.navigate(['/auth/login']);
   }

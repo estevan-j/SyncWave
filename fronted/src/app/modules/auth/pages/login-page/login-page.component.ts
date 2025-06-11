@@ -2,8 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../../../core/services/user.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
   selector: 'app-login-page',
@@ -22,7 +21,7 @@ export class LoginPageComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private userService: UserService,
-    private http: HttpClient
+    private apiService: ApiService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -31,7 +30,6 @@ export class LoginPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Verificar si ya está autenticado
     if (this.userService.isAuthenticated()) {
       this.router.navigate(['/home']);
     }
@@ -44,7 +42,7 @@ export class LoginPageComponent implements OnInit {
 
     this.loading = true;
     
-    this.http.post(`${environment.apiUrl}/api/users/login`, this.loginForm.value)
+    this.apiService.post('/api/users/login', this.loginForm.value)
       .subscribe({
         next: (response: any) => {
           this.userService.setCurrentUser(response.user);
@@ -67,6 +65,7 @@ export class LoginPageComponent implements OnInit {
       });
   }
 
+  // Resto de los métodos permanecen igual...
   goToRegister(): void {
     this.router.navigate(['/auth/register']);
   }
