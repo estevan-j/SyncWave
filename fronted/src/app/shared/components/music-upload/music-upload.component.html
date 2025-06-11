@@ -1,0 +1,141 @@
+<div class="music-upload">
+    <div class="upload-container">
+        <!-- Header -->
+        <div class="upload-header">
+            <h2>
+                <i class="uil uil-cloud-upload"></i>
+                Subir Nueva Canción
+            </h2>
+            <p>Agrega tu música a la biblioteca</p>
+        </div>
+
+        <!-- Formulario de subida -->
+        <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()" class="upload-form">
+
+            <!-- Área de archivo -->
+            <div class="file-upload-area" [class.drag-over]="dragOver" [class.has-file]="selectedFile"
+                (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onFileDrop($event)">
+
+                <div *ngIf="!selectedFile" class="file-drop-zone">
+                    <i class="uil uil-file-music"></i>
+                    <p>Arrastra tu archivo de audio aquí</p>
+                    <span>o</span>
+                    <label for="file-input" class="file-select-btn">
+                        Seleccionar archivo
+                    </label>
+                    <input type="file" id="file-input" accept="audio/*" (change)="onFileSelected($event)"
+                        style="display: none;">
+                    <small>Formatos soportados: MP3, WAV, OGG, M4A, AAC (máx. 50MB)</small>
+                </div>
+
+                <div *ngIf="selectedFile" class="file-selected">
+                    <i class="uil uil-music-note"></i>
+                    <div class="file-info">
+                        <h4>{{selectedFile.name}}</h4>
+                        <p>{{formatFileSize(selectedFile.size)}}</p>
+                    </div>
+                    <button type="button" class="remove-file-btn" (click)="resetForm()">
+                        <i class="uil uil-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error de archivo -->
+            <div *ngIf="fileInvalid" class="field-error">
+                Por favor selecciona un archivo de audio
+            </div>
+
+            <!-- Campos del formulario -->
+            <div class="form-fields">
+
+                <!-- Título -->
+                <div class="form-field">
+                    <label for="title">Título *</label>
+                    <input type="text" id="title" formControlName="title" placeholder="Nombre de la canción"
+                        [class.invalid]="titleInvalid">
+                    <div *ngIf="titleInvalid" class="field-error">
+                        El título es requerido
+                    </div>
+                </div>
+
+                <!-- Artista -->
+                <div class="form-field">
+                    <label for="artist">Artista *</label>
+                    <input type="text" id="artist" formControlName="artist" placeholder="Nombre del artista"
+                        [class.invalid]="artistInvalid">
+                    <div *ngIf="artistInvalid" class="field-error">
+                        El artista es requerido
+                    </div>
+                </div> <!-- Álbum (opcional) -->
+                <div class="form-field">
+                    <label for="album">Álbum</label>
+                    <input type="text" id="album" formControlName="album" placeholder="Nombre del álbum (opcional)">
+                </div>
+
+                <!-- Nickname del Artista (opcional) -->
+                <div class="form-field">
+                    <label for="artist_nickname">Nombre artístico</label>
+                    <input type="text" id="artist_nickname" formControlName="artist_nickname"
+                        placeholder="Alias o nombre artístico (opcional)">
+                </div>
+
+                <!-- Nacionalidad (opcional) -->
+                <div class="form-field">
+                    <label for="nationality">Nacionalidad</label>
+                    <select id="nationality" formControlName="nationality">
+                        <option value="">Seleccionar nacionalidad (opcional)</option>
+                        <option value="AR">Argentina</option>
+                        <option value="BR">Brasil</option>
+                        <option value="CL">Chile</option>
+                        <option value="CO">Colombia</option>
+                        <option value="CR">Costa Rica</option>
+                        <option value="ES">España</option>
+                        <option value="FR">Francia</option>
+                        <option value="IT">Italia</option>
+                        <option value="MX">México</option>
+                        <option value="PE">Perú</option>
+                        <option value="UK">Reino Unido</option>
+                        <option value="US">Estados Unidos</option>
+                        <option value="UY">Uruguay</option>
+                        <option value="VE">Venezuela</option>
+                        <option value="OTHER">Otro</option>
+                    </select>
+                </div>
+
+                <!-- URL de Portada (opcional) -->
+                <div class="form-field">
+                    <label for="cover_url">URL de la portada</label>
+                    <input type="url" id="cover_url" formControlName="cover_url"
+                        placeholder="https://ejemplo.com/portada.jpg (opcional)">
+                    <small>URL de una imagen para usar como portada del álbum</small>
+                </div>
+            </div>
+
+            <!-- Progreso de subida -->
+            <div *ngIf="uploadProgress" class="upload-progress">
+                <div class="progress-info">
+                    <span class="progress-status">{{uploadProgress.message}}</span>
+                    <span class="progress-percent">{{uploadProgress.percentage}}%</span>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="uploadProgress.percentage"
+                        [class]="uploadProgress.status"></div>
+                </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" (click)="resetForm()" [disabled]="isUploading">
+                    <i class="uil uil-times"></i>
+                    Cancelar
+                </button>
+
+                <button type="submit" class="btn btn-primary" [disabled]="uploadForm.invalid || isUploading">
+                    <i class="uil" [class]="isUploading ? 'uil-spinner' : 'uil-cloud-upload'"></i>
+                    {{isUploading ? 'Subiendo...' : 'Subir Canción'}}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

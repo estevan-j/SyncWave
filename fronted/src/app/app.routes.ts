@@ -1,21 +1,21 @@
 import { Routes } from '@angular/router';
-import { HomePageComponent } from '@modules/home/page/home-page/home-page.component';
 import { NgModule } from '@angular/core';
-import { RouterModule} from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 
 export const routes: Routes = [
     {
-        path: '', //Cuando ponemos en vacio hacemos referencia a localhost:4200
-        component: HomePageComponent,
-        loadChildren: ()=>import(`./modules/home/home.module`).then(m=>m.HomeModule)
+        path: '', // Redirigir a login cuando se accede a localhost:4200
+        redirectTo: '/auth/login',
+        pathMatch: 'full'
     },
     {
-        path: 'auth', //Cuando ponemos una ruta hacemos referencia a localhost:4200/auth
-        loadChildren: ()=>import(`./modules/auth/auth.module`).then(m=>m.AuthModule)
-    },
-
-   
+        path: 'auth', // Rutas de autenticación
+        loadChildren: () => import(`./modules/auth/auth.module`).then(m => m.AuthModule)
+    }, {
+        path: 'home', // Ruta para la página principal con reproductor
+        loadChildren: () => import(`./modules/home/home.module`).then(m => m.HomeModule)
+    }
 ];
 
 /*
@@ -39,7 +39,7 @@ export const routes: Routes = [
 */
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
 })
 export class AppRoutes { }

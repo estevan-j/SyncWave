@@ -1,74 +1,68 @@
 <div class="media-player">
-    <div class="media-player--wrapper ">
-        <!--Zona del artista-->
-        <div class="artist player-center">
-            <ng-container *ngTemplateOutlet="artistZone"></ng-container>
-        </div>
-        <!--Zona del reproductor-->
-        <div class="player-controls player-center">
-            <ng-container *ngTemplateOutlet="playerZone"></ng-container>
-        </div>
-        <!--Zona del controles adicionales-->
-        <div class="player-audio player-center">
-            <ng-container *ngTemplateOutlet="playerAudio"></ng-container>
+    <!-- Información de la canción actual -->
+    <div class="track-info">
+        <img [src]="displayTrack.cover_url" [alt]="displayTrack.name" class="cover" (error)="onImageError($event)">
+
+        <div class="track-details">
+            <div class="track-name">{{displayTrack.name}}</div>
+            <div class="track-artist">{{displayTrack.artist || 'Artista desconocido'}}</div>
         </div>
     </div>
-</div>
 
-<!-- ZONE TEMPLATES -->
-
-<ng-template #artistZone>
-    <div class="artist-inside" *ngIf="true">
-
-        <img [src]="mockCover.cover" alt="" class="cover">
-        <div class="track-info">
-            <h3 class="track-title">{{mockCover.name}}</h3>
-            <h5 class="track-title sub-title">{{mockCover.album}}</h5>
-        </div>
-        <div class="track-like">
-            <button class="btn-like">
-                <i class="uil uil-heart"></i>
-            </button>
-        </div>
-    </div>
-</ng-template>
-
-<ng-template #playerZone>
-    <div class="player-controls-inside">
-        <div class="buttons-media">
-            <button class="arrow btn">
+    <!-- Controles de reproducción -->
+    <div class="player-controls">
+        <div class="control-buttons">
+            <button class="control-btn" (click)="previousTrack()" title="Anterior">
                 <i class="uil uil-previous"></i>
             </button>
-            <button class="play btn">
-                <i class="uil"></i>
 
+            <button class="control-btn skip-btn" (click)="skipBackward(10)" title="Retroceder 10 segundos">
+                <i class="uil uil-step-backward"></i>
+                <span class="skip-time">10</span>
             </button>
-            <button class="arrow btn">
+
+            <button class="play-pause-btn" (click)="togglePlay()" title="Reproducir/Pausar" [disabled]="isLoading">
+                <i *ngIf="!isLoading" class="uil" [ngClass]="{
+                    'uil-play': !isPlaying,
+                    'uil-pause': isPlaying
+                }"></i>
+                <div *ngIf="isLoading" class="loading-spinner"></div>
+            </button>
+
+            <button class="control-btn skip-btn" (click)="skipForward(10)" title="Avanzar 10 segundos">
                 <i class="uil uil-step-forward"></i>
+                <span class="skip-time">10</span>
             </button>
-        </div>
-        <div class="media-linetime">
 
-            <div class="time">00</div>
-            <span #progressBar class="time-progress">
-                <span class="time-progress-live" [style.width]="10+'%'">
-                </span>
-            </span>
-            <div class="time">{{99}}</div>
+            <button class="control-btn" (click)="nextTrack()" title="Siguiente">
+                <i class="uil uil-skip-forward"></i>
+            </button>
+        </div><!-- Barra de progreso -->
+        <div class="progress-section">
+            <span class="time current-time">{{formatTime(currentTime)}}</span>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" (click)="seekTo($event)" title="Hacer clic para saltar a una posición">
+                    <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+                    <div class="progress-handle" [style.left.%]="progressPercentage"></div>
+                </div>
+            </div>
+
+            <span class="time total-time">{{formatTime(duration)}}</span>
         </div>
     </div>
-</ng-template>
 
-<ng-template #playerAudio>
-    <div class="player-audio-inside">
-        <button class="btn-media">
-            <i class="uil uil-list-ui-alt"></i>
+    <!-- Controles de volumen -->
+    <div class="volume-controls">
+        <button class="volume-btn" (click)="toggleMute()" title="Silenciar">
+            <i class="uil" [ngClass]="{
+                'uil-volume-off': isMuted || volume === 0,
+                'uil-volume-down': !isMuted && volume > 0 && volume <= 50,
+                'uil-volume-up': !isMuted && volume > 50
+            }"></i>
         </button>
-        <button class="btn-media">
-            <i class="uil uil-boombox"></i>
-        </button>
-        <button class="btn-media">
-            <i class="uil uil-volume-off"></i>
-        </button>
+
+        <input type="range" class="volume-slider" min="0" max="100" [value]="volume" (input)="setVolume($event)"
+            title="Volumen">
     </div>
-</ng-template>
+</div>

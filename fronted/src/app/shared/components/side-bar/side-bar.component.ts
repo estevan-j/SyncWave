@@ -10,14 +10,14 @@ import { Router, RouterModule } from '@angular/router';
   styleUrl: './side-bar.component.css'
 })
 export class SideBarComponent implements OnInit {
-  
+
   mainMenu: {
     defaultOptions: Array<any>, accessLink: Array<any>
-  } = {defaultOptions:[], accessLink:[]}
+  } = { defaultOptions: [], accessLink: [] }
 
   customOptions: Array<any> = []
 
-  constructor(private router:Router){}
+  constructor(private router: Router) { }
 
   //Router Link
 
@@ -28,35 +28,36 @@ export class SideBarComponent implements OnInit {
         name: 'Home',
         icon: 'uil uil-estate',
         router: ['/', 'auth']  
-      },*/
-      {
-        name: 'Home', //S redirige al localhost
+      },*/      {
+        name: 'Home', //Se redirige al home principal (tracks)
         icon: 'uil uil-estate',
-        router: ['/', 'auth']  
+        router: ['/home']
       },
       {
         name: 'Buscar',  //Se redirige al historial de canciones
         icon: 'uil uil-search',
-        router: ['/', 'history']
-      },
-      {
+        router: ['/home/history']
+      },{
         name: 'Tu biblioteca', //Se redirige al las canciones
         icon: 'uil uil-chart',
-        router: ['/', 'favorites'],
-        //query: { hola: 'mundo' }
+        router: ['/home/favorites'],        //query: { hola: 'mundo' }
       }
-    ]
+    ];
 
     this.mainMenu.accessLink = [
       {
         name: 'Crear lista',
-        icon: 'uil-plus-square'
+        icon: 'uil-plus-square'      }, {
+        name: 'Canciones que te gustan',
+        icon: 'uil-heart-medical',
+        router: ['/home/favorites/liked-songs']
       },
       {
-        name: 'Canciones que te gustan',
-        icon: 'uil-heart-medical'
+        name: 'Subir música',
+        icon: 'uil-cloud-upload',
+        router: ['/home/tracks/admin']
       }
-    ]
+    ];
 
     this.customOptions = [
       {

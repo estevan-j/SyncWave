@@ -24,6 +24,13 @@ body {
     font-family: var(--font-family-1);
     font-size: var(--font-size-1);
     color: var(--color-4);
+    overflow-x: hidden; /* Evitar scroll horizontal */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 /*estilos generales para los botones de entrada*/
@@ -34,4 +41,103 @@ button {
 
 button:disabled{
     opacity: 50%;
+}
+
+/* Layout principal responsive */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.main-content {
+    flex: 1;
+    margin-left: 15.5rem;
+    transition: margin-left 0.3s ease;
+    width: calc(100% - 15.5rem);
+    max-width: calc(100% - 15.5rem);
+    overflow-x: hidden;
+    padding: 0;
+}
+
+/* Responsive Layout */
+@media (max-width: 1024px) {
+    .main-content {
+        margin-left: 14rem;
+        width: calc(100% - 14rem);
+        max-width: calc(100% - 14rem);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 12rem;
+        width: calc(100% - 12rem);
+        max-width: calc(100% - 12rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        margin-left: 3.5rem;
+        width: calc(100% - 3.5rem);
+        max-width: calc(100% - 3.5rem);
+        padding: 0 0.25rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .main-content {
+        margin-left: 3rem;
+        width: calc(100% - 3rem);
+        max-width: calc(100% - 3rem);
+        padding: 0 0.15rem;
+    }
+}
+
+/* Utilidades responsive */
+.hide-mobile {
+    display: block;
+}
+
+.show-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none;
+    }
+    
+    .show-mobile {
+        display: block;
+    }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #1ed760;
+}
+
+/* Animaciones responsive */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

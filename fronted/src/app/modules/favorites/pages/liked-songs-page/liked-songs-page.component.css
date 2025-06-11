@@ -1,0 +1,298 @@
+.liked-songs-page {
+  padding: 0;
+  color: var(--color-primary);
+}
+
+/* Header de canciones que te gustan */
+.liked-songs-header {
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+}
+
+.liked-songs-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(59, 130, 246, 0.8) 100%);
+  z-index: 1;
+}
+
+.playlist-info {
+  display: flex;
+  align-items: flex-end;
+  gap: 2rem;
+  z-index: 2;
+  position: relative;
+}
+
+.playlist-cover {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.liked-songs-icon {
+  font-size: 4rem;
+  color: white;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.playlist-details {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.playlist-type {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.playlist-title {
+  font-size: 4rem;
+  font-weight: 900;
+  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.playlist-description {
+  font-size: 1.1rem;
+  margin: 0 0 1rem 0;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.playlist-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.separator {
+  opacity: 0.7;
+}
+
+.user-name {
+  font-weight: 600;
+}
+
+.song-count {
+  opacity: 0.9;
+}
+
+/* Acciones de la playlist */
+.playlist-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 2;
+  position: relative;
+}
+
+.play-all-btn {
+  background: #1db954;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(29, 185, 84, 0.3);
+}
+
+.play-all-btn:hover {
+  background: #1ed760;
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(29, 185, 84, 0.4);
+}
+
+.play-all-btn i {
+  font-size: 1.2rem;
+}
+
+.shuffle-btn,
+.more-options-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.shuffle-btn:hover,
+.more-options-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.shuffle-btn i,
+.more-options-btn i {
+  font-size: 1.3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .liked-songs-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    min-height: auto;
+    gap: 2rem;
+  }
+
+  .playlist-info {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .playlist-cover {
+    width: 150px;
+    height: 150px;
+  }
+
+  .liked-songs-icon {
+    font-size: 3rem;
+  }
+
+  .playlist-title {
+    font-size: 2.5rem;
+  }
+
+  .playlist-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .play-all-btn {
+    padding: 0.8rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .shuffle-btn,
+  .more-options-btn {
+    width: 45px;
+    height: 45px;
+  }
+
+  .shuffle-btn i,
+  .more-options-btn i {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .liked-songs-header {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+
+  .playlist-cover {
+    width: 120px;
+    height: 120px;
+  }
+
+  .liked-songs-icon {
+    font-size: 2.5rem;
+  }
+
+  .playlist-title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .playlist-description {
+    font-size: 1rem;
+  }
+
+  .playlist-stats {
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .playlist-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .play-all-btn {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .shuffle-btn,
+  .more-options-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .shuffle-btn i,
+  .more-options-btn i {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .playlist-title {
+    font-size: 1.75rem;
+  }
+
+  .playlist-cover {
+    width: 100px;
+    height: 100px;
+  }
+
+  .liked-songs-icon {
+    font-size: 2rem;
+  }
+
+  .play-all-btn {
+    font-size: 0.8rem;
+    padding: 0.7rem 1rem;
+  }
+
+  .shuffle-btn,
+  .more-options-btn {
+    width: 35px;
+    height: 35px;
+  }
+}

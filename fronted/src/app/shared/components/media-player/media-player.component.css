@@ -1,154 +1,567 @@
+/* Media Player Moderno */
 .media-player {
     background-color: var(--color-5);
     position: fixed;
     bottom: 0;
     width: 100%;
     z-index: 2;
-    height: 85px;
+    height: 90px;
     border-top: solid 1px var(--color-2);
     box-shadow: 0px -15px 15px 7px #0000002e;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    gap: 1rem;
 }
 
-.media-player .media-player--wrapper {
+/* Información de la canción */
+.track-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 250px;
+    flex: 1;
+}
+
+.track-info .cover {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--border-radius-1);
+    object-fit: cover;
+    background-color: var(--color-2);
+}
+
+.track-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.track-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--color-4);
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-artist {
+    font-size: 0.8rem;
+    color: #b3b3b3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Controles principales */
+.player-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 2;
+    max-width: 600px;
+    gap: 0.5rem;
+}
+
+.control-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.control-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.control-btn:hover {
+    color: var(--color-4);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.play-pause-btn {
+    background: var(--color-4);
+    border: none;
+    color: var(--color-3);
+    cursor: pointer;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    transition: all 0.2s ease;
+    margin: 0 0.5rem;
+}
+
+.play-pause-btn:hover {
+    transform: scale(1.05);
+    background: #fff;
+}
+
+.skip-btn {
     position: relative;
-    display: flex;
-    justify-content: space-between;
-    height: 100%;
-    padding: 0;
 }
 
-.media-player .media-player--wrapper .player-center {
+.skip-time {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: #b3b3b3;
+    font-weight: 500;
+}
+
+/* Barra de progreso */
+.progress-section {
     display: flex;
-    align-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.time {
+    font-size: 0.75rem;
+    color: #b3b3b3;
+    min-width: 40px;
+    text-align: center;
+}
+
+.progress-bar-container {
+    flex: 1;
+    height: 12px;
+    display: flex;
     align-items: center;
 }
 
-.media-player--wrapper .artist {
-    width: 25%;
-    padding: 0 .5rem;
-}
-
-.media-player--wrapper .player-audio {
-    width: 25%;
-    padding: 0 .5rem;
-}
-
-.media-player--wrapper .player-controls {
-    width: 50%;
-    padding: 0 .5rem;
-    position: relative;
-}
-
-.media-player--wrapper .artist .artist-inside {
-    display: flex;
-    gap: .5rem
-}
-
-.media-player--wrapper .artist .track-like {
-    display: flex;
-    flex-direction: column;
-    align-self: center;
-    padding: 0 .25rem;
-}
-
-.media-player--wrapper .artist .track-like .btn-like {
-    border: 0;
-    background-color: transparent;
-    color: var(--color-4);
-    font-size: var(--font-size-2);
-    opacity: .7;
-}
-
-.media-player--wrapper .artist .artist-inside .track-info {
-    display: flex;
-    flex-direction: column;
-    align-self: center;
-}
-
-.media-player--wrapper .artist .artist-inside .track-title {
-    margin: 0;
-    font-weight: 400;
-    font-size: .8rem;
-}
-
-.media-player--wrapper .artist .artist-inside .sub-title {
-    margin: 0;
-    font-weight: 300;
-    font-size: 80%;
-    opacity: .6;
-}
-
-.media-player--wrapper .artist .artist-inside .cover {
-    width: 55px;
-    height: 55px;
-    object-fit: cover;
-}
-
-.media-player--wrapper .player-controls-inside {
-    display: flex;
-    justify-content: center;
-    align-self: center;
-    flex-direction: column;
+.progress-bar {
     width: 100%;
-    position: relative;
-}
-
-.media-player--wrapper .player-controls-inside .buttons-media {
-    display: flex;
-    justify-content: center;
-    align-self: center;
-    gap: .5rem
-}
-
-.media-player--wrapper .player-controls-inside .buttons-media .btn {
-    background-color: transparent;
-    border: 0;
-    color: var(--color-4);
-    opacity: .7;
-    font-size: 1.65rem
-}
-
-.media-player--wrapper .player-controls-inside .buttons-media .play {
-    font-size: 2.35rem;
-}
-
-.media-player--wrapper .player-controls-inside .media-linetime {
-    display: flex;
-    justify-content: space-between;
-    font-size: 70%;
-    padding: 0;
-}
-
-.media-player--wrapper .player-controls-inside .media-linetime .time {
-    padding: .5rem 0;
-}
-
-.media-player--wrapper .player-controls-inside .media-linetime .time-progress {
+    height: 4px;
     background-color: var(--color-2);
-    height: 2px;
-    width: 100%;
-    left: 0;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.progress-bar:hover {
+    height: 6px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: var(--color-1);
+    border-radius: 2px;
+    transition: width 0.1s ease;
+}
+
+.progress-handle {
     position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-4);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.progress-bar:hover .progress-handle {
+    opacity: 1;
+}
+
+/* Controles de volumen */
+.volume-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 150px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.volume-btn {
+    background: none;
+    border: none;
+    color: #b3b3b3;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.volume-btn:hover {
+    color: var(--color-4);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.volume-slider {
+    width: 80px;
+    height: 4px;
+    background: var(--color-2);
+    border-radius: 2px;
+    outline: none;
     cursor: pointer;
 }
 
-.media-player--wrapper .player-controls-inside .media-linetime .time-progress-live {
-    background-color: var(--color-4);
-    width: 0%;
-    height: 2px;
-    transition: all ease var(--animation-1);
-    position: absolute;
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: var(--color-4);
+    border-radius: 50%;
+    cursor: pointer;
 }
 
-.media-player--wrapper .player-audio-inside {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
+.volume-slider::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    background: var(--color-4);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
 }
 
-.media-player--wrapper .player-audio-inside .btn-media {
-    background-color: transparent;
-    border: 0;
-    color: var(--color-4);
-    font-size: var(--font-size-2);
+/* Loading spinner */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    border-top: 2px solid var(--color-3);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .media-player {
+        height: 85px;
+        padding: 0 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .track-info {
+        min-width: 200px;
+    }
+
+    .track-info .cover {
+        width: 50px;
+        height: 50px;
+    }
+
+    .track-name {
+        font-size: 0.85rem;
+    }
+
+    .track-artist {
+        font-size: 0.75rem;
+    }
+
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    .play-pause-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.3rem;
+    }
+
+    .volume-slider {
+        width: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .media-player {
+        height: 80px;
+        padding: 0 0.5rem;
+        gap: 0.5rem;
+        flex-wrap: nowrap;
+    }
+
+    .track-info {
+        min-width: 140px;
+        gap: 0.5rem;
+    }
+
+    .track-info .cover {
+        width: 45px;
+        height: 45px;
+    }
+
+    .track-name {
+        font-size: 0.8rem;
+    }
+
+    .track-artist {
+        font-size: 0.7rem;
+    }
+
+    .player-controls {
+        flex: 1.5;
+        gap: 0.25rem;
+    }
+
+    .control-buttons {
+        gap: 0.25rem;
+    }
+
+    .control-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+        padding: 6px;
+    }
+
+    .play-pause-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+
+    .progress-container {
+        gap: 0.5rem;
+    }
+
+    .time-display {
+        font-size: 0.7rem;
+        min-width: 35px;
+    }
+
+    .volume-controls {
+        min-width: 80px;
+        gap: 0.25rem;
+    }
+
+    .volume-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+
+    .volume-slider {
+        width: 50px;
+        height: 3px;
+    }
+
+    .skip-time {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .media-player {
+        height: 70px;
+        padding: 0 0.25rem;
+        gap: 0.25rem;
+    }
+
+    .track-info {
+        min-width: 100px;
+        gap: 0.35rem;
+    }
+
+    .track-info .cover {
+        width: 40px;
+        height: 40px;
+    }
+
+    .track-details {
+        min-width: 60px;
+    }
+
+    .track-name {
+        font-size: 0.75rem;
+        margin-bottom: 2px;
+    }
+
+    .track-artist {
+        font-size: 0.65rem;
+    }
+
+    .player-controls {
+        flex: 1;
+        gap: 0.1rem;
+    }
+
+    .control-buttons {
+        gap: 0.1rem;
+    }
+
+    .control-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+        padding: 4px;
+    }
+
+    .play-pause-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
+    }
+
+    .progress-container {
+        gap: 0.25rem;
+    }
+
+    .time-display {
+        font-size: 0.65rem;
+        min-width: 30px;
+    }
+
+    .progress-bar {
+        height: 3px;
+    }
+
+    .progress-bar::-webkit-slider-thumb {
+        width: 10px;
+        height: 10px;
+    }
+
+    .volume-controls {
+        min-width: 60px;
+        gap: 0.15rem;
+    }
+
+    .volume-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.9rem;
+    }
+
+    .volume-slider {
+        width: 35px;
+        height: 2px;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        width: 8px;
+        height: 8px;
+    }
+
+    /* Ocultar algunos controles en móvil */
+    .skip-backward,
+    .skip-forward {
+        display: none;
+    }
+}
+
+@media (max-width: 360px) {
+    .media-player {
+        height: 65px;
+        padding: 0 0.15rem;
+    }
+
+    .track-info {
+        min-width: 80px;
+        gap: 0.25rem;
+    }
+
+    .track-info .cover {
+        width: 35px;
+        height: 35px;
+    }
+
+    .track-name {
+        font-size: 0.7rem;
+    }
+
+    .track-artist {
+        font-size: 0.6rem;
+    }
+
+    .control-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+    }
+
+    .play-pause-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .time-display {
+        font-size: 0.6rem;
+        min-width: 25px;
+    }
+
+    .volume-controls {
+        min-width: 50px;
+    }
+
+    .volume-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
+    }
+
+    .volume-slider {
+        width: 25px;
+    }
+
+    /* Simplificar aún más en pantallas muy pequeñas */
+    .shuffle-btn,
+    .repeat-btn {
+        display: none;
+    }
+}
+
+/* Modo landscape para móviles */
+@media (max-width: 768px) and (orientation: landscape) {
+    .media-player {
+        height: 60px;
+    }
+
+    .track-info .cover {
+        width: 35px;
+        height: 35px;
+    }
+
+    .control-btn {
+        width: 30px;
+        height: 30px;
+    }
+
+    .play-pause-btn {
+        width: 36px;
+        height: 36px;
+    }
 }

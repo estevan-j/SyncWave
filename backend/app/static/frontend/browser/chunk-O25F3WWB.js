@@ -1,0 +1,1 @@
+import{B as i,ia as n,k as t,qa as m}from"./chunk-P3AH2Q6W.js";var u=[],r=class o{static \u0275fac=function(e){return new(e||o)};static \u0275mod=i({type:o});static \u0275inj=t({imports:[m.forChild(u),m]})};var s=class o{static \u0275fac=function(e){return new(e||o)};static \u0275mod=i({type:o});static \u0275inj=t({imports:[n,r]})};export{s as HistoryModule};
