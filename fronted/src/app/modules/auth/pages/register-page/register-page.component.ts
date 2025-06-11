@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
   selector: 'app-register-page',
   templateUrl: './register-page.component.html',
-  styleUrls: ['./register-page.component.css']
+  styleUrls: ['./register-page.component.css'],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class RegisterPageComponent implements OnInit {
   registerForm: FormGroup;
@@ -28,7 +31,7 @@ export class RegisterPageComponent implements OnInit {
     }, { validator: this.passwordMatchValidator });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   passwordMatchValidator(formGroup: FormGroup) {
     const password = formGroup.get('password')?.value;
@@ -42,9 +45,9 @@ export class RegisterPageComponent implements OnInit {
     }
 
     this.loading = true;
-    
+
     const { email, password } = this.registerForm.value;
-    
+
     this.apiService.post('/api/users', { email, password })
       .subscribe({
         next: (response: any) => {

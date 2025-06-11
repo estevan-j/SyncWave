@@ -11,15 +11,15 @@ import { ApiService } from '../../core/services/api.service';
 
 @NgModule({
   declarations: [
-    LoginPageComponent,
-    RegisterPageComponent,
-    ForgotPasswordPageComponent
   ],
   imports: [
     CommonModule,
     AuthRoutingModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    LoginPageComponent,
+    RegisterPageComponent,
+    ForgotPasswordPageComponent
   ],
   providers: [
     ApiService // Proveemos el ApiService a nivel de módulo

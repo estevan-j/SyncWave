@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-forgot-password-page',
   templateUrl: './forgot-password-page.component.html',
-  styleUrls: ['./forgot-password-page.component.css']
+  styleUrls: ['./forgot-password-page.component.css'],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class ForgotPasswordPageComponent implements OnInit {
   forgotPasswordForm: FormGroup;
@@ -24,7 +27,7 @@ export class ForgotPasswordPageComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void { }
 
   onSubmit(): void {
     if (this.forgotPasswordForm.invalid) {
@@ -32,11 +35,11 @@ export class ForgotPasswordPageComponent implements OnInit {
     }
 
     this.loading = true;
-    
+
     // Simular envío de correo (en una implementación real, llamarías a tu API)
     setTimeout(() => {
       this.showSuccessPopup(
-        'Correo enviado', 
+        'Correo enviado',
         'Hemos enviado un enlace para restablecer tu contraseña al correo electrónico proporcionado.'
       );
       this.loading = false;

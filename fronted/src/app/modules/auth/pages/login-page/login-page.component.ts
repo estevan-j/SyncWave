@@ -1,13 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { UserService } from '../../../../core/services/user.service';
 import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
   selector: 'app-login-page',
   templateUrl: './login-page.component.html',
-  styleUrls: ['./login-page.component.css']
+  styleUrls: ['./login-page.component.css'],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule]
 })
 export class LoginPageComponent implements OnInit {
   loginForm: FormGroup;
@@ -41,7 +44,7 @@ export class LoginPageComponent implements OnInit {
     }
 
     this.loading = true;
-    
+
     this.apiService.post('/api/users/login', this.loginForm.value)
       .subscribe({
         next: (response: any) => {
