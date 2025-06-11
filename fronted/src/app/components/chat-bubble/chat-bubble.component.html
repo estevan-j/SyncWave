@@ -1,0 +1,21 @@
+<!-- Botón flotante -->
+<div id="chat-toggle" (click)="toggleChat()">💬</div>
+
+<!-- Ventana del chat -->
+<div id="chat-window" *ngIf="chatVisible">
+  <div id="chat-header">MusicPro</div>
+  <ul id="messages">
+    <li *ngFor="let msg of messages"><strong>Tú</strong>: {{ msg }}</li>
+  </ul>
+  <form id="chat-form" (submit)="sendMessage(); $event.preventDefault()">
+    <input
+      id="input"
+      [(ngModel)]="message"
+      name="message"
+      placeholder="Escribe tu mensaje..."
+    />
+    <button id="send-btn" type="submit" [disabled]="!message.trim()">
+      Enviar
+    </button>
+  </form>
+</div>
