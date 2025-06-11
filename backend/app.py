@@ -37,7 +37,10 @@ def create_app():
         'http://localhost:4200',
         'http://localhost:3000',    # Para desarrollo con frontend separado
         'http://127.0.0.1:3000',
-        'http://127.0.0.1:4200'
+        'http://127.0.0.1:4200',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:57313',
+        'http://127.0.0.1:8080'
     ])
 
     # Initialize SocketIO
@@ -46,6 +49,8 @@ def create_app():
         "http://127.0.0.1:5000",
         "http://localhost:3000",    # Para desarrollo
         "http://127.0.0.1:3000"
+        "http://127.0.0.1:5000"
+        "http://127.0.0.1:57313"
     ], async_mode='threading')
 
     app.register_blueprint(users_bp, url_prefix='/api/users')

@@ -28,37 +28,34 @@ export class SideBarComponent implements OnInit {
         name: 'Home',
         icon: 'uil uil-estate',
         router: ['/', 'auth']  
-      },*/
-      {
-        name: 'Home', //S redirige al localhost
+      },*/      {
+        name: 'Home', //Se redirige al home principal (tracks)
         icon: 'uil uil-estate',
-        router: ['/', 'auth']
+        router: ['/home']
       },
       {
         name: 'Buscar',  //Se redirige al historial de canciones
         icon: 'uil uil-search',
-        router: ['/', 'history']
-      },
-      {
+        router: ['/home/history']
+      },{
         name: 'Tu biblioteca', //Se redirige al las canciones
         icon: 'uil uil-chart',
-        router: ['/', 'favorites'],        //query: { hola: 'mundo' }
+        router: ['/home/favorites'],        //query: { hola: 'mundo' }
       }
     ];
 
     this.mainMenu.accessLink = [
       {
         name: 'Crear lista',
-        icon: 'uil-plus-square'
-      }, {
+        icon: 'uil-plus-square'      }, {
         name: 'Canciones que te gustan',
         icon: 'uil-heart-medical',
-        router: ['/', 'favorites', 'liked-songs']
+        router: ['/home/favorites/liked-songs']
       },
       {
         name: 'Subir música',
         icon: 'uil-cloud-upload',
-        router: ['/', 'tracks', 'admin']
+        router: ['/home/tracks/admin']
       }
     ];
 

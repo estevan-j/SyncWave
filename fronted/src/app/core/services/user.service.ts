@@ -7,18 +7,27 @@ import { BehaviorSubject } from 'rxjs';
 export class UserService {
   private currentUserSubject = new BehaviorSubject<any>(null);
   currentUser$ = this.currentUserSubject.asObservable();
-
   constructor() {
     // Intenta cargar el usuario desde localStorage al inicializar
-    const user = localStorage.getItem('currentUser');
-    if (user) {
-      this.currentUserSubject.next(JSON.parse(user));
+    try {
+      const user = localStorage.getItem('currentUser');
+      if (user && user !== 'undefined' && user !== 'null') {
+        const parsedUser = JSON.parse(user);
+        this.currentUserSubject.next(parsedUser);
+      }
+    } catch (error) {
+      console.warn('Error parsing user from localStorage:', error);
+      localStorage.removeItem('currentUser');
     }
   }
-
   setCurrentUser(user: any): void {
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    this.currentUserSubject.next(user);
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      this.currentUserSubject.next(user);
+    } else {
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject.next(null);
+    }
   }
 
   getCurrentUser(): any {
