@@ -1,0 +1,547 @@
+.music-upload {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--color-5);
+    border-radius: var(--border-radius-2);
+    box-shadow: var(--shadow-1);
+}
+
+/* Header */
+.upload-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-2);
+}
+
+.upload-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.upload-header i {
+    font-size: 1.8rem;
+    color: var(--color-1);
+}
+
+.upload-header p {
+    margin: 0;
+    color: #b3b3b3;
+    font-size: 0.9rem;
+}
+
+/* File Upload Area */
+.file-upload-area {
+    border: 2px dashed var(--color-2);
+    border-radius: var(--border-radius-1);
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.file-upload-area.drag-over {
+    border-color: var(--color-1);
+    background-color: rgba(29, 185, 84, 0.1);
+}
+
+.file-upload-area.has-file {
+    border-color: var(--color-1);
+    border-style: solid;
+}
+
+/* File Drop Zone */
+.file-drop-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.file-drop-zone i {
+    font-size: 3rem;
+    color: var(--color-2);
+    margin-bottom: 0.5rem;
+}
+
+.file-drop-zone p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--color-4);
+}
+
+.file-drop-zone span {
+    color: #b3b3b3;
+    font-size: 0.9rem;
+}
+
+.file-select-btn {
+    background: var(--color-1);
+    color: var(--color-3);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-1);
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.file-select-btn:hover {
+    background-color: #1ed760;
+}
+
+.file-drop-zone small {
+    color: #b3b3b3;
+    font-size: 0.75rem;
+}
+
+/* File Selected */
+.file-selected {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(29, 185, 84, 0.1);
+    border-radius: var(--border-radius-1);
+}
+
+.file-selected i {
+    font-size: 2rem;
+    color: var(--color-1);
+}
+
+.file-info {
+    flex: 1;
+    text-align: left;
+}
+
+.file-info h4 {
+    margin: 0 0 0.25rem 0;
+    color: var(--color-4);
+    font-size: 1rem;
+}
+
+.file-info p {
+    margin: 0;
+    color: #b3b3b3;
+    font-size: 0.85rem;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    font-size: 1.2rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-file-btn:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+/* Form Fields */
+.form-fields {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-field label {
+    color: var(--color-4);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.form-field input {
+    background-color: var(--color-2);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-1);
+    padding: 0.75rem 1rem;
+    color: var(--color-4);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-field input:focus {
+    outline: none;
+    border-color: var(--color-1);
+    background-color: rgba(29, 185, 84, 0.1);
+}
+
+.form-field input.invalid {
+    border-color: #ff6b6b;
+}
+
+.field-error {
+    color: #ff6b6b;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+/* Upload Progress */
+.upload-progress {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: var(--color-2);
+    border-radius: var(--border-radius-1);
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.progress-status {
+    color: var(--color-4);
+    font-size: 0.9rem;
+}
+
+.progress-percent {
+    color: var(--color-1);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.progress-bar {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.uploading {
+    background-color: var(--color-1);
+}
+
+.progress-fill.processing {
+    background-color: #ffb347;
+}
+
+.progress-fill.completed {
+    background-color: var(--color-1);
+}
+
+.progress-fill.error {
+    background-color: #ff6b6b;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius-1);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--color-1);
+    color: var(--color-3);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #1ed760;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-4);
+    border: 1px solid var(--color-2);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-2);
+}
+
+/* Loading spinner */
+.uil-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .music-upload {
+        margin: 1rem;
+        padding: 1.5rem;
+        max-width: calc(100% - 2rem);
+    }
+
+    .upload-header h2 {
+        font-size: 1.3rem;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .file-drop-zone {
+        padding: 1rem;
+    }
+
+    .file-drop-zone i {
+        font-size: 2rem;
+    }
+
+    .file-drop-zone p {
+        font-size: 0.9rem;
+    }
+
+    .file-select-btn {
+        padding: 0.6rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .music-upload {
+        margin: 0.5rem;
+        padding: 1rem;
+        max-width: calc(100% - 1rem);
+        border-radius: var(--border-radius-1);
+    }
+
+    .upload-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .upload-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .upload-header i {
+        font-size: 1.5rem;
+    }
+
+    .file-upload-area {
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .file-drop-zone i {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .file-drop-zone p {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .file-select-btn {
+        padding: 0.55rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .file-drop-zone small {
+        font-size: 0.7rem;
+    }
+
+    .file-selected {
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .file-selected i {
+        font-size: 1.5rem;
+    }
+
+    .file-info h4 {
+        font-size: 0.9rem;
+    }
+
+    .file-info p {
+        font-size: 0.8rem;
+    }
+
+    .remove-file-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .form-group label {
+        font-size: 0.85rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        padding: 0.7rem 1.25rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .music-upload {
+        margin: 0.25rem;
+        padding: 0.75rem;
+        max-width: calc(100% - 0.5rem);
+    }
+
+    .upload-header h2 {
+        font-size: 1rem;
+    }
+
+    .upload-header p {
+        font-size: 0.8rem;
+    }
+
+    .file-upload-area {
+        padding: 1rem;
+    }
+
+    .file-drop-zone i {
+        font-size: 1.5rem;
+    }
+
+    .file-drop-zone p {
+        font-size: 0.8rem;
+    }
+
+    .file-select-btn {
+        padding: 0.5rem 0.85rem;
+        font-size: 0.8rem;
+    }
+
+    .file-selected {
+        padding: 0.6rem;
+        gap: 0.6rem;
+    }
+
+    .file-info h4 {
+        font-size: 0.85rem;
+    }
+
+    .file-info p {
+        font-size: 0.75rem;
+    }
+
+    .remove-file-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .progress-text {
+        font-size: 0.8rem;
+    }
+
+    .upload-progress {
+        height: 6px;
+    }
+}
+
+.form-field select {
+    background-color: var(--color-2);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-1);
+    padding: 0.75rem 1rem;
+    color: var(--color-4);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.form-field select:focus {
+    outline: none;
+    border-color: var(--color-1);
+    background-color: rgba(29, 185, 84, 0.1);
+}
+
+.form-field select option {
+    background-color: var(--color-5);
+    color: var(--color-4);
+    padding: 0.5rem;
+}
+
+.form-field small {
+    color: #b3b3b3;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+}

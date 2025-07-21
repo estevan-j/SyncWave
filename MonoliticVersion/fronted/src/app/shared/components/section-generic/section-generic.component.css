@@ -1,0 +1,77 @@
+.section--generic {
+    margin-bottom: 2rem;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section--generic__player--zone .player--list {
+    display: grid;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 1.15rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.section--generic__player--zone .player--list.card-small {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.section--generic__player--zone .player--list.card-big {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .section--generic__player--zone .player--list.card-small {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+    
+    .section--generic__player--zone .player--list.card-big {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .section--generic__player--zone .player--list.card-small {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.8rem;
+    }
+    
+    .section--generic__player--zone .player--list.card-big {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .section--generic {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section--generic__player--zone .player--list.card-small {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.6rem;
+    }
+    
+    .section--generic__player--zone .player--list.card-big {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.6rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .section--generic__player--zone .player--list.card-small {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .section--generic__player--zone .player--list.card-big {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 0.5rem;
+    }
+}

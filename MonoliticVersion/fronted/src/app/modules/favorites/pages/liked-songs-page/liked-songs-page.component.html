@@ -1,0 +1,42 @@
+<div class="liked-songs-page">
+    <!-- Header personalizado para canciones que te gustan -->
+    <div class="liked-songs-header">
+        <div class="playlist-info">
+            <div class="playlist-cover">
+                <div class="liked-songs-icon">
+                    <i class="uil uil-heart"></i>
+                </div>
+            </div>
+            <div class="playlist-details">
+                <span class="playlist-type">Playlist</span>
+                <h1 class="playlist-title">Canciones que te gustan</h1>
+                <p class="playlist-description">
+                    Tus canciones favoritas en un solo lugar
+                </p>
+                <div class="playlist-stats">
+                    <span class="user-name">Tu música</span>
+                    <span class="separator">•</span>
+                    <span class="song-count">
+                        {{favoritesCount}} canción{{ favoritesCount !== 1 ? 'es' : '' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="playlist-actions">
+            <button class="play-all-btn" (click)="playAll()" [disabled]="favoritesCount === 0">
+                <i class="uil uil-play"></i>
+                Reproducir todo
+            </button>
+            <button class="shuffle-btn" (click)="playShuffled()" [disabled]="favoritesCount === 0"
+                title="Reproducir en aleatorio">
+                <i class="uil uil-shuffle"></i>
+            </button>
+            <button class="more-options-btn" title="Más opciones">
+                <i class="uil uil-ellipsis-h"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Lista de canciones favoritas -->
+    <app-favorites-list-body></app-favorites-list-body>
+</div>

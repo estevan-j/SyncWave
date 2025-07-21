@@ -1,0 +1,46 @@
+<!-- Botón flotante -->
+<div id="chat-toggle" (click)="toggleChat()" [class.connected]="connected">
+  💬
+  <span class="status-indicator" [class.online]="connected"></span>
+</div>
+
+<!-- Ventana del chat -->
+<div id="chat-window" *ngIf="chatVisible">
+  <div id="chat-header">
+    MusicPro Chat
+    <span class="connection-status" [class.connected]="connected">
+      {{ connected ? 'Conectado' : 'Desconectado' }}
+    </span>
+  </div>
+
+  <div id="messages-container">
+    <ul id="messages">
+      <li *ngFor="let msg of messages" class="message-item">
+        <div class="message-header">
+          <strong [class.own-message]="msg.user_id === currentUser?.id">
+            {{ msg.user_id === currentUser?.id ? 'Tú' : msg.username }}
+          </strong>
+          <span class="timestamp">{{ formatTimestamp(msg.timestamp) }}</span>
+        </div>
+        <div class="message-content" [class.own-message]="msg.user_id === currentUser?.id">
+          {{ msg.message }}
+        </div>
+      </li>
+    </ul>
+
+    <div *ngIf="messages.length === 0" class="no-messages">
+      No hay mensajes aún. ¡Sé el primero en escribir!
+    </div>
+  </div>
+  <form id="chat-form" (submit)="sendMessage(); $event.preventDefault()">
+    <input id="input" [(ngModel)]="message" name="message" placeholder="Escribe tu mensaje..." [disabled]="!connected"
+      maxlength="500" (input)="onTyping()" (blur)="onStopTyping()" />
+    <button id="send-btn" type="submit" [disabled]="!message.trim() || !connected">
+      Enviar
+    </button>
+  </form>
+
+  <div class="user-info" *ngIf="currentUser">
+    Conectado como: <strong>{{ currentUser.username }}</strong>
+  </div>
+</div>
