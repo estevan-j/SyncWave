@@ -1,0 +1,68 @@
+<div class="media-player">
+    <!-- Información de la canción actual -->
+    <div class="track-info">
+        <img [src]="displayTrack.cover_url" [alt]="displayTrack.name" class="cover" (error)="onImageError($event)">
+
+        <div class="track-details">
+            <div class="track-name">{{displayTrack.name}}</div>
+            <div class="track-artist">{{displayTrack.artist || 'Artista desconocido'}}</div>
+        </div>
+    </div>
+
+    <!-- Controles de reproducción -->
+    <div class="player-controls">
+        <div class="control-buttons">
+            <button class="control-btn" (click)="previousTrack()" title="Anterior">
+                <i class="uil uil-previous"></i>
+            </button>
+
+            <button class="control-btn skip-btn" (click)="skipBackward(10)" title="Retroceder 10 segundos">
+                <i class="uil uil-step-backward"></i>
+                <span class="skip-time">10</span>
+            </button>
+
+            <button class="play-pause-btn" (click)="togglePlay()" title="Reproducir/Pausar" [disabled]="isLoading">
+                <i *ngIf="!isLoading" class="uil" [ngClass]="{
+                    'uil-play': !isPlaying,
+                    'uil-pause': isPlaying
+                }"></i>
+                <div *ngIf="isLoading" class="loading-spinner"></div>
+            </button>
+
+            <button class="control-btn skip-btn" (click)="skipForward(10)" title="Avanzar 10 segundos">
+                <i class="uil uil-step-forward"></i>
+                <span class="skip-time">10</span>
+            </button>
+
+            <button class="control-btn" (click)="nextTrack()" title="Siguiente">
+                <i class="uil uil-skip-forward"></i>
+            </button>
+        </div><!-- Barra de progreso -->
+        <div class="progress-section">
+            <span class="time current-time">{{formatTime(currentTime)}}</span>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" (click)="seekTo($event)" title="Hacer clic para saltar a una posición">
+                    <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+                    <div class="progress-handle" [style.left.%]="progressPercentage"></div>
+                </div>
+            </div>
+
+            <span class="time total-time">{{formatTime(duration)}}</span>
+        </div>
+    </div>
+
+    <!-- Controles de volumen -->
+    <div class="volume-controls">
+        <button class="volume-btn" (click)="toggleMute()" title="Silenciar">
+            <i class="uil" [ngClass]="{
+                'uil-volume-off': isMuted || volume === 0,
+                'uil-volume-down': !isMuted && volume > 0 && volume <= 50,
+                'uil-volume-up': !isMuted && volume > 50
+            }"></i>
+        </button>
+
+        <input type="range" class="volume-slider" min="0" max="100" [value]="volume" (input)="setVolume($event)"
+            title="Volumen">
+    </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="tracks-page">
+    <!-- Header de búsqueda si estamos en modo búsqueda -->
+    <div *ngIf="isSearchMode" class="search-header">
+        <h2>
+            <i class="uil uil-search"></i>
+            Resultados de búsqueda: "{{ searchTerm }}"
+        </h2>
+        <p *ngIf="!loading && !error">
+            {{ mockTracksList.length }} canción(es) encontrada(s)
+        </p>
+    </div>
+
+    <!-- Estados de carga y error -->
+    <div *ngIf="loading" class="loading-state">
+        <i class="uil uil-spinner"></i>
+        <span>{{ isSearchMode ? 'Buscando...' : 'Cargando canciones...' }}</span>
+    </div>
+
+    <div *ngIf="error" class="error-state">
+        <i class="uil uil-exclamation-triangle"></i>
+        <p>{{ error }}</p>
+        <button (click)="retryLoad()" class="retry-btn">
+            <i class="uil uil-redo"></i>
+            Reintentar
+        </button>
+    </div>
+
+    <!-- Lista vacía -->
+    <div *ngIf="!loading && !error && mockTracksList.length === 0" class="empty-state">
+        <i class="uil uil-music-note"></i>
+        <p>{{ isSearchMode ? 'No se encontraron canciones' : 'No hay canciones disponibles' }}</p>
+    </div>
+
+    <!-- Contenido principal: solo mostrar si hay tracks -->
+    <div *ngIf="!loading && !error && mockTracksList.length > 0">
+        <!-- Section Top (small) - Solo en modo normal -->
+        <app-section-generic *ngIf="!isSearchMode" [dataTracks]="mockTracksList.slice(0, 5)" [mode]="'small'"
+            [title]="'🎵 Últimas canciones añadidas'"></app-section-generic>
+
+        <!-- Section Main (Big) - Todas las canciones -->
+        <app-section-generic [dataTracks]="mockTracksList" [mode]="'big'"
+            [title]="isSearchMode ? 'Resultados de búsqueda' : '🎧 Toda la música'"></app-section-generic>
+    </div>
+</div>

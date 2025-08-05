@@ -6,18 +6,19 @@ from datetime import timedelta
 
 class Config:
     """Base configuration"""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-string'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
-    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production') 
     
-    # Service Discovery
-    MUSIC_SERVICE_URL = os.environ.get('MUSIC_SERVICE_URL', 'http://localhost:5002')
-    CHAT_SERVICE_URL = os.environ.get('CHAT_SERVICE_URL', 'http://localhost:5003')
+    # Supabase Configuration
+    SUPABASE_URL = os.getenv('SUPABASE_URL')
+    SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY')
+    SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+    SUPABASE_JWT_SECRET = os.getenv('SUPABASE_JWT_SECRET')
     
-    # Database Configuration
-    DATABASE_URL = os.environ.get('DATABASE_URL')
+    # ✅ Configuración de logging simplificada
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'WARNING')  # WARNING por defecto para práctica
+    LOG_FORMAT = os.getenv('LOG_FORMAT', 'simple')  # Formato simple por defecto
+    SERVICE_NAME = os.getenv('SERVICE_NAME', 'users-auth')
+    SERVICE_VERSION = os.getenv('SERVICE_VERSION', '1.0.0')
     
     # CORS Configuration
     CORS_ORIGINS = ['http://localhost:3000', 'http://localhost:5000']
@@ -25,38 +26,31 @@ class Config:
     # Error Handling
     PROPAGATE_EXCEPTIONS = True
     
-    # Logging
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+    @staticmethod
+    def init_app(app):
+        """Inicializar configuración específica de la app"""
+        # ✅ Usar la librería compartida
+        from microservice_logging import configure_root_logger
+        configure_root_logger()
 
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
-        'postgresql://postgres:postgres@localhost:5432/music_app_users_dev'
-    SQLALCHEMY_ECHO = True  # Log SQL queries in development
+    # ✅ Logging más verboso en desarrollo si necesitas debug
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')  # INFO en desarrollo
 
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
     TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'postgresql://user:password@localhost:5432/music_app_users_prod'
-    SQLALCHEMY_ECHO = False
-
-class TestingConfig(Config):
-    """Testing configuration"""
-    TESTING = True
-    DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=1)
-    WTF_CSRF_ENABLED = False
+    # ✅ Logging mínimo en producción
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'ERROR')  # Solo errores en producción
 
 # Configuration mapping
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
-    'testing': TestingConfig,
     'default': DevelopmentConfig
 }
 

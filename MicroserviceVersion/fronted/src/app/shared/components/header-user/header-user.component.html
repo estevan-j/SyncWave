@@ -1,0 +1,61 @@
+<div class="header-user">
+    <!-- Contenedor principal de búsqueda -->
+    <div class="search-container">
+        <div class="search-wrapper">
+            <input #searchInput type="text" class="search-input" placeholder="Buscar canciones, artistas..."
+                (input)="onSearchChange($event)" (focus)="showResults()" (blur)="hideSearchResults()"
+                (keydown)="onSearchKeyDown($event)" autocomplete="off">
+
+            <!-- Icono de búsqueda -->
+            <button class="search-button" (click)="goToSearch()">
+                <i class="uil uil-search" *ngIf="!isSearching"></i>
+                <div class="search-spinner" *ngIf="isSearching"></div>
+            </button>
+
+            <!-- Botón para limpiar -->
+            <button class="clear-search" *ngIf="searchInput.value" (click)="clearSearch()">
+                <i class="uil uil-times"></i>
+            </button>
+        </div> <!-- Resultados de búsqueda -->
+        <div class="search-results" *ngIf="showSearchResults" (click)="$event.stopPropagation()">
+            <div class="search-results-header">
+                <span>Resultados de búsqueda ({{ searchResults.length }})</span>
+                <button class="view-all-button" (click)="goToSearch()">
+                    Ver todos
+                </button>
+            </div>
+            <div class="search-results-list">
+                <div class="search-result-item" *ngFor="let track of searchResults | slice:0:5"
+                    (click)="playTrack(track); $event.stopPropagation()">
+                    <div class="result-cover">
+                        <img [src]="track.cover_url" [alt]="track.name" (error)="onImageError($event)" />
+                        <div class="play-overlay">
+                            <i class="uil uil-play"></i>
+                        </div>
+                    </div>
+
+                    <div class="result-info">
+                        <div class="result-title">{{ track.name }}</div>
+                        <div class="result-artist">{{ track.artist }}</div>
+                    </div>
+
+                    <div class="result-duration">
+                        {{ track.duration }}s
+                    </div>
+                </div>
+
+                <!-- Mensaje si no hay resultados -->
+                <div class="no-results" *ngIf="searchResults.length === 0 && !isSearching">
+                    <i class="uil uil-search"></i>
+                    <span>No se encontraron resultados</span>
+                </div>
+
+                <!-- Loading -->
+                <div class="search-loading" *ngIf="isSearching">
+                    <div class="loading-spinner"></div>
+                    <span>Buscando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

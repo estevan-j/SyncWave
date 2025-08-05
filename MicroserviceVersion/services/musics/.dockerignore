@@ -1,0 +1,23 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.env
+.env.*
+.vscode/
+.idea/
+*.egg-info/
+dist/
+build/
+node_modules/
+tests/
+.git/
+.gitignore
+Dockerfile
+README.md
+# Ignora todo excepto lo necesario para el build
+!services/musics/**
+!shared/logging/**

@@ -1,0 +1,192 @@
+.tracks-page {
+    padding: 0.75rem;
+}
+
+/* Header de búsqueda */
+.search-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-2);
+}
+
+.search-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: var(--color-4);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.8rem;
+}
+
+.search-header i {
+    color: var(--color-1);
+}
+
+.search-header p {
+    margin: 0;
+    color: #b3b3b3;
+    font-size: 1rem;
+}
+
+/* Estados de la página */
+.loading-state,
+.error-state,
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #b3b3b3;
+}
+
+.loading-state i,
+.error-state i,
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--color-2);
+}
+
+.loading-state i {
+    color: var(--color-1);
+    animation: spin 1s linear infinite;
+}
+
+.error-state i {
+    color: #ff6b6b;
+}
+
+.error-state p {
+    color: #ff6b6b;
+    font-size: 1.1rem;
+    margin: 0 0 1rem 0;
+    max-width: 600px;
+}
+
+.retry-btn {
+    background: var(--color-1);
+    color: var(--color-3);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-1);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.retry-btn:hover {
+    background-color: #1ed760;
+    transform: translateY(-1px);
+}
+
+.retry-btn i {
+    font-size: 1rem;
+    margin: 0;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+/* Animación de spinner */
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tracks-page {
+        padding: 0.5rem;
+    }
+
+    .search-header h2 {
+        font-size: 1.5rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .loading-state,
+    .error-state,
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .tracks-page {
+        padding: 0.25rem;
+    }
+
+    .search-header {
+        padding: 1rem 0.5rem;
+    }
+
+    .search-header h2 {
+        font-size: 1.25rem;
+        gap: 0.5rem;
+    }
+
+    .search-header span {
+        font-size: 1rem;
+        font-weight: 400;
+    }
+
+    .loading-state,
+    .error-state,
+    .empty-state {
+        padding: 1.5rem 0.5rem;
+    }
+
+    .loading-state i,
+    .error-state p,
+    .empty-state p {
+        font-size: 1rem;
+    }
+
+    .retry-btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .tracks-page {
+        padding: 0.15rem;
+    }
+
+    .search-header {
+        padding: 0.75rem 0.25rem;
+    }
+
+    .search-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .search-header span {
+        font-size: 0.9rem;
+    }
+
+    .loading-state,
+    .error-state,
+    .empty-state {
+        padding: 1rem 0.25rem;
+    }
+
+    .retry-btn {
+        padding: 0.5rem 0.85rem;
+        font-size: 0.85rem;
+    }
+}

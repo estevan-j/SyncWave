@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Archivos de desarrollo
+.env
+.env.local
+.env.development
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Base de datos local
+*.db
+*.sqlite3
+
+# Coverage y testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Documentación
+README.md
+docs/
+
+# Archivos temporales
+.DS_Store
+Thumbs.db
