@@ -13,7 +13,7 @@ RUN adduser --disabled-password --gecos '' appuser
 
 WORKDIR /app
 
-COPY services/users-auth/requirements.txt .
+COPY services/users/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 
@@ -21,8 +21,8 @@ COPY shared/logging ./shared/logging
 RUN pip install -e ./shared/logging
 
 # Copia el código de la app y el run.py fuera de /app
-COPY services/users-auth/app/ ./app/
-COPY services/users-auth/run.py ./
+COPY services/users/app/ ./app/
+COPY services/users/run.py ./
 
 RUN chown -R appuser:appuser /app
 USER appuser
@@ -31,7 +31,7 @@ EXPOSE 5000
 
 ENV FLASK_APP=run.py \
     FLASK_ENV=production \
-    SERVICE_NAME=users-auth \
+    SERVICE_NAME=users \
     SERVICE_VERSION=1.0.0 \
     LOG_LEVEL=WARNING
 
