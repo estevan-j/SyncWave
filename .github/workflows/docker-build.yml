@@ -5,11 +5,11 @@ on:
     branches: [main, develop]
     paths:
       - "MicroserviceVersion/services/**"
-      - ".github/workflows/**" # Para que se ejecute si cambias el workflow
+      - ".github/workflows/**"
   pull_request:
     branches: [main]
     paths: ["MicroserviceVersion/services/**"]
-  workflow_dispatch: # Permite ejecución manual
+  workflow_dispatch:
 
 env:
   REGISTRY: docker.io
@@ -31,6 +31,8 @@ jobs:
           ls -la MicroserviceVersion/ || echo "MicroserviceVersion no existe"
           echo "=== Contenido de services ==="
           ls -la MicroserviceVersion/services/ || echo "services no existe"
+          echo "=== Verificando Dockerfiles específicos ==="
+          ls -la MicroserviceVersion/services/*/Dockerfile || echo "No se encontraron Dockerfiles"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -52,6 +54,28 @@ jobs:
             echo "❌ Music Service Dockerfile NO encontrado"
           fi
 
+      - name: Check if Users Service Dockerfile exists
+        id: check-users
+        run: |
+          if [ -f "MicroserviceVersion/services/users/Dockerfile" ]; then
+            echo "users_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Users Service Dockerfile encontrado"
+          else
+            echo "users_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Users Service Dockerfile NO encontrado"
+          fi
+
+      - name: Check if Chat Service Dockerfile exists
+        id: check-chat
+        run: |
+          if [ -f "MicroserviceVersion/services/chat/Dockerfile" ]; then
+            echo "chat_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Chat Service Dockerfile encontrado"
+          else
+            echo "chat_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Chat Service Dockerfile NO encontrado"
+          fi
+
       - name: Build and push Music Service
         if: steps.check-music.outputs.music_exists == 'true'
         uses: docker/build-push-action@v5
@@ -66,7 +90,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push Users Service
-        if: hashFiles('MicroserviceVersion/services/users/Dockerfile') != ''
+        if: steps.check-users.outputs.users_exists == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./MicroserviceVersion
@@ -78,10 +102,29 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and push Chat Service
+        if: steps.check-chat.outputs.chat_exists == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./MicroserviceVersion
+          file: ./MicroserviceVersion/services/chat/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/chat-service:latest
+            ${{ env.DOCKERHUB_USERNAME }}/chat-service:${{ github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Summary
         run: |
-          echo "✅ Docker images built and pushed successfully!"
-          echo "🐳 Available images:"
-          echo "   - ${{ env.DOCKERHUB_USERNAME }}/musics-service:${{ github.run_number }}"
-          echo "   - ${{ env.DOCKERHUB_USERNAME }}/musics-service:latest"
+          echo "✅ Docker images build process completed!"
+          echo "🐳 Images attempted to build:"
+          if [ "${{ steps.check-music.outputs.music_exists }}" == "true" ]; then
+            echo "   ✅ ${{ env.DOCKERHUB_USERNAME }}/musics-service:${{ github.run_number }}"
+          fi
+          if [ "${{ steps.check-users.outputs.users_exists }}" == "true" ]; then
+            echo "   ✅ ${{ env.DOCKERHUB_USERNAME }}/users-service:${{ github.run_number }}"
+          fi
+          if [ "${{ steps.check-chat.outputs.chat_exists }}" == "true" ]; then
+            echo "   ✅ ${{ env.DOCKERHUB_USERNAME }}/chat-service:${{ github.run_number }}"
+          fi
