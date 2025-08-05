@@ -3,10 +3,13 @@ name: Build and Push Docker Images
 on:
   push:
     branches: [main, develop]
-    paths: ["MicroserviceVersion/services/**"]
+    paths:
+      - "MicroserviceVersion/services/**"
+      - ".github/workflows/**" # Para que se ejecute si cambias el workflow
   pull_request:
     branches: [main]
     paths: ["MicroserviceVersion/services/**"]
+  workflow_dispatch: # Permite ejecución manual
 
 env:
   REGISTRY: docker.io
@@ -20,6 +23,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug - List files
+        run: |
+          echo "=== Verificando estructura de archivos ==="
+          ls -la
+          echo "=== Contenido de MicroserviceVersion ==="
+          ls -la MicroserviceVersion/ || echo "MicroserviceVersion no existe"
+          echo "=== Contenido de services ==="
+          ls -la MicroserviceVersion/services/ || echo "services no existe"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -29,7 +41,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Check if Music Service Dockerfile exists
+        id: check-music
+        run: |
+          if [ -f "MicroserviceVersion/services/musics/Dockerfile" ]; then
+            echo "music_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Music Service Dockerfile encontrado"
+          else
+            echo "music_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Music Service Dockerfile NO encontrado"
+          fi
+
       - name: Build and push Music Service
+        if: steps.check-music.outputs.music_exists == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./MicroserviceVersion
