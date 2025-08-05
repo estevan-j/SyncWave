@@ -102,19 +102,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and push Chat Service
-        if: steps.check-chat.outputs.chat_exists == 'true'
-        uses: docker/build-push-action@v5
-        with:
-          context: ./MicroserviceVersion
-          file: ./MicroserviceVersion/services/chat/Dockerfile
-          push: true
-          tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/chat-service:latest
-            ${{ env.DOCKERHUB_USERNAME }}/chat-service:${{ github.run_number }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Summary
         run: |
           echo "✅ Docker images build process completed!"
