@@ -1,7 +1,8 @@
+import os
 from flask import Blueprint, request, jsonify, g
 from app.repositories.music_repository import MusicRepository
 from app.schemas.music_schema import MusicCreate, MusicUpdate, MusicResponse
-from app.utils.auth import require_auth
+from app.utils.auth import require_auth, no_auth
 from app.utils.supabase_client import supabase
 from pydantic import ValidationError
 import logging
@@ -13,10 +14,18 @@ music_bp = Blueprint('music', __name__, url_prefix='/api/musics')
 # Logger básico para el controlador
 logger = get_logger("music_controller")
 
-# GET /musics
-@music_bp.route('/', methods=['GET'])
+# GET /musics - SIN AUTH TEMPORALMENTE
+@music_bp.route('/', methods=['GET', 'OPTIONS'])
 @require_auth
 def get_all_musics():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'OK'})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+        response.headers.add('Access-Control-Allow-Methods', "GET,OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
     request_id = getattr(g, 'request_id', 'unknown')
     try:
         musics = MusicRepository.get_all_musics()
@@ -91,6 +100,48 @@ def update_music(music_id):
         logger.error(f"Failed to update music: {str(e)}", extra={'custom_request_id': request_id})
         return jsonify({'error': 'Failed to update music', 'details': str(e), 'request_id': request_id}), 500
 
+# NUEVO: PUT /musics/songs/<int:music_id>/metadata - Para compatibilidad con frontend
+@music_bp.route('/<int:music_id>/metadata', methods=['PUT', 'OPTIONS'])
+@require_auth
+def update_music_metadata(music_id):
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'OK'})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+        response.headers.add('Access-Control-Allow-Methods', "PUT,OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    request_id = getattr(g, 'request_id', 'unknown')
+    music = MusicRepository.get_music_by_id(music_id)
+    if not music:
+        logger.warning(f"Music not found for metadata update: {music_id}", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'Music not found', 'request_id': request_id}), 404
+
+    try:
+        data = request.get_json()
+        # Permitir actualización parcial de metadata
+        allowed_fields = ['title', 'artist', 'album', 'genre', 'duration']
+        update_data = {k: v for k, v in data.items() if k in allowed_fields}
+        
+        if not update_data:
+            return jsonify({'error': 'No valid fields to update', 'request_id': request_id}), 400
+            
+        music_update = MusicUpdate(**update_data)
+    except (TypeError, ValidationError) as e:
+        logger.warning(f"Invalid input for metadata update: {str(e)}", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'Invalid input', 'details': str(e), 'request_id': request_id}), 400
+
+    for field, value in music_update.dict(exclude_unset=True).items():
+        setattr(music, field, value)
+    try:
+        music = MusicRepository.update_music(music)
+        logger.info("Music metadata updated", extra={'custom_request_id': request_id, 'music_id': music_id})
+        return jsonify(MusicResponse.from_orm(music).dict()), 200
+    except Exception as e:
+        logger.error(f"Failed to update music metadata: {str(e)}", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'Failed to update music metadata', 'details': str(e), 'request_id': request_id}), 500
+
 # DELETE /musics/<int:music_id>
 @music_bp.route('/<int:music_id>', methods=['DELETE'])
 @require_auth
@@ -107,19 +158,31 @@ def delete_music(music_id):
     except Exception as e:
         logger.error(f"Failed to delete music: {str(e)}", extra={'custom_request_id': request_id})
         return jsonify({'error': 'Failed to delete music', 'details': str(e), 'request_id': request_id}), 500
-    
-@music_bp.route('/upload', methods=['POST'])
-@require_auth
+   
+
+
+@music_bp.route('/upload', methods=['POST', 'OPTIONS'])
+@no_auth
 def upload_music_file():
-    """
-    Endpoint to upload a music file to Supabase Storage.
-    Expects a multipart/form-data with a file field named 'file'.
-    """
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'OK'})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+        response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+        response.headers.add('Access-Control-Allow-Methods', "POST,OPTIONS")
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
     request_id = getattr(g, 'request_id', 'unknown')
-    file = request.files.get('file')
-    if not file:
-        logger.warning("No file provided for upload", extra={'custom_request_id': request_id})
-        return jsonify({'error': 'No file provided', 'request_id': request_id}), 400
+    
+    # Check if file exists in request
+    if 'file' not in request.files:
+        logger.warning("No file field in request", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'No file field in request', 'request_id': request_id}), 400
+    
+    file = request.files['file']
+    if not file or file.filename == '':
+        logger.warning("No file selected", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'No file selected', 'request_id': request_id}), 400
 
     allowed_extensions = {'mp3', 'wav', 'flac', 'm4a', 'ogg'}
     filename = file.filename
@@ -128,22 +191,52 @@ def upload_music_file():
         return jsonify({'error': 'Invalid file extension', 'request_id': request_id}), 400
 
     try:
-        SUPABASE_BUCKET = os.environ.get('SUPABASE_BUCKET', 'musics')
-        file_bytes = file.read()
-        storage_path = f"{filename}"
+        # Create uploads directory if it doesn't exist
+        uploads_dir = os.path.join(os.getcwd(), 'uploads')
+        if not os.path.exists(uploads_dir):
+            os.makedirs(uploads_dir)
+        
+        # Generate unique filename to avoid conflicts
+        import uuid
+        import time
+        timestamp = int(time.time())
+        file_extension = filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{timestamp}_{uuid.uuid4().hex[:8]}.{file_extension}"
+        
+        file_path = os.path.join(uploads_dir, unique_filename)
+        
+        # Validate file size (50MB limit)
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)  # Reset file pointer
+        
+        max_size = 50 * 1024 * 1024  # 50MB limit
+        if file_size > max_size:
+            logger.warning(f"File too large: {file_size} bytes", extra={'custom_request_id': request_id})
+            return jsonify({'error': 'File too large (max 50MB)', 'request_id': request_id}), 400
+        
+        # Save file locally
+        try:
+            file.save(file_path)
+            logger.info("File saved locally", extra={'custom_request_id': request_id, 'file': unique_filename})
+        except Exception as save_error:
+            logger.error(f"Failed to save file: {str(save_error)}", extra={'custom_request_id': request_id})
+            return jsonify({'error': 'Failed to save file', 'details': str(save_error), 'request_id': request_id}), 500
 
-        # Subir a Supabase Storage
-        res = supabase.storage.from_(SUPABASE_BUCKET).upload(storage_path, file_bytes, file.content_type, upsert=True)
-        if hasattr(res, 'error') and res.error:
-            logger.error(f"Supabase upload error: {res.error}", extra={'custom_request_id': request_id})
-            return jsonify({'error': 'Failed to upload file', 'details': str(res.error), 'request_id': request_id}), 500
+        # Generate public URL (for local development)
+        public_url = f"http://localhost:5001/uploads/{unique_filename}"
 
-        public_url = supabase.storage.from_(SUPABASE_BUCKET).get_public_url(storage_path)
-        logger.info("File uploaded to Supabase", extra={'custom_request_id': request_id, 'file': filename})
+        logger.info("File uploaded successfully", extra={'custom_request_id': request_id, 'file': unique_filename})
 
-        return jsonify({'message': 'File uploaded', 'url': public_url, 'request_id': request_id}), 201
+        return jsonify({
+            'message': 'File uploaded successfully', 
+            'url': public_url,
+            'filename': unique_filename,
+            'original_filename': filename,
+            'file_size': file_size,
+            'request_id': request_id
+        }), 201
 
     except Exception as e:
-        logger.error(f"Failed to upload file: {str(e)}", extra={'custom_request_id': request_id})
-        return jsonify({'error': 'Failed to upload file', 'details': str(e), 'request_id': request_id}), 500
-    
+        logger.error(f"Unexpected error during upload: {str(e)}", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'Internal server error', 'details': str(e), 'request_id': request_id}), 500

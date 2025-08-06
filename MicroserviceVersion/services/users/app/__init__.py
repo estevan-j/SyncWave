@@ -1,11 +1,10 @@
 """
 Users Authentication Microservice - Configuración básica optimizada
 """
-from flask import Flask, jsonify, g
+from flask import Flask, jsonify, g, request, make_response
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from app.config import get_config
-from app.controllers.auth_controller import auth_bp
 
 import logging
 
@@ -15,67 +14,51 @@ logging.basicConfig(level=logging.INFO)
 # Logger principal - solo para errores importantes
 app_logger = logging.getLogger("users-auth-app")
 
+# Variable global para SocketIO
+socketio = SocketIO()
+
 
 def create_app(config_name=None):
     """Create and configure the Flask application instance"""
 
     app = Flask(__name__)
 
-
     # Cargar configuración
     config = get_config()
     app.config.from_object(config)
     config.init_app(app)
 
-    # Registrar blueprints
-    from app.controllers.auth_controller import auth_bp
-    app.register_blueprint(auth_bp)
+    # Configurar CORS MEJORADO - antes de SocketIO
+    cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:4200'])
+    if isinstance(cors_origins, str):
+        cors_origins = [origin.strip() for origin in cors_origins.split(',')]
 
-    # Inicializar Swagger (Flasgger) después de los blueprints y con configuración explícita
-    from flasgger import Swagger
-    swagger_config = {
-        "headers": [],
-        "specs": [
-            {
-                "endpoint": 'apispec_1',
-                "route": '/apispec_1.json',
-                "rule_filter": lambda rule: True,  # incluir todas las rutas
-                "model_filter": lambda tag: True,  # incluir todos los modelos
-            }
-        ],
-        "static_url_path": "/flasgger_static",
-        "swagger_ui": True,
-        "specs_route": "/apidocs/"
-    }
-    swagger_template = {
-        "swagger": "2.0",
-        "info": {
-            "title": "A swagger API",
-            "version": "0.0.1"
-        },
-        "securityDefinitions": {
-            "bearerAuth": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header",
-                "description": "JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'"
-            }
-        }
-    }
-    Swagger(app, config=swagger_config, template=swagger_template, merge=True)
-
-    # ✅ Solo logging básico - sin correlation ID para ahorrar recursos
-    # setup_request_logging(app)  # Removed custom logging setup
-
-    # Configurar CORS básico
     CORS(app,
-         origins=app.config.get('CORS_ORIGINS', ['*']),
-         supports_credentials=True,
-         allow_headers=['Content-Type', 'Authorization'])
+         origins="*",
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+         supports_credentials=False)  # Cambiar a False con origins="*"
+    
+    # Agregar handler explícito para OPTIONS (preflight) ANTES de SocketIO
 
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = make_response()
+            response.headers.add("Access-Control-Allow-Origin",
+                                 request.headers.get('Origin', '*'))
+            response.headers.add('Access-Control-Allow-Headers',
+                                 "Content-Type,Authorization,X-Requested-With")
+            response.headers.add(
+                'Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+            return response
 
-    # Initialize SocketIO for WebSocket support
-    socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+    # Initialize SocketIO DESPUÉS de CORS y preflight handler
+    socketio.init_app(app,
+                      cors_allowed_origins=cors_origins,
+                      logger=False,  # Reducir logs de SocketIO
+                      engineio_logger=False)
 
     # Registrar blueprints
     from app.controllers.auth_controller import auth_bp
@@ -88,7 +71,7 @@ def create_app(config_name=None):
         handle_connect, handle_disconnect, handle_join_room, handle_leave_room,
         handle_send_message, handle_get_message_history, handle_typing, handle_get_connected_users
     )
-    
+
     socketio.on_event('connect', handle_connect)
     socketio.on_event('disconnect', handle_disconnect)
     socketio.on_event('join_room', handle_join_room)

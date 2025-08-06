@@ -28,7 +28,7 @@ class ChatService:
         try:
             # Validate message data
             self._validate_message_data(message_data)
-            
+
             # Prepare data for Supabase
             message_record = {
                 'user_id': message_data.user_id,
@@ -37,15 +37,16 @@ class ChatService:
                 'timestamp': datetime.utcnow().isoformat(),
                 'username': message_data.username or f'User_{message_data.user_id}'
             }
-            
+
             # Insert into chat_messages table
-            response = self.supabase_admin.table('chat_messages').insert(message_record).execute()
-            
+            response = self.supabase_admin.table(
+                'chat_messages').insert(message_record).execute()
+
             if not response.data:
                 raise ChatServiceException("Failed to save message")
-            
+
             saved_message = response.data[0]
-            
+
             return ChatMessageResponse(
                 id=saved_message['id'],
                 user_id=saved_message['user_id'],
@@ -54,7 +55,7 @@ class ChatService:
                 timestamp=datetime.fromisoformat(saved_message['timestamp']),
                 room=saved_message['room']
             )
-            
+
         except Exception as e:
             logger.error(f"Error saving message: {str(e)}")
             if isinstance(e, (MessageValidationException, ChatServiceException)):
@@ -70,7 +71,7 @@ class ChatService:
                 .order('timestamp', desc=False)\
                 .limit(limit)\
                 .execute()
-            
+
             messages = []
             for msg in response.data:
                 messages.append(ChatMessageResponse(
@@ -81,9 +82,9 @@ class ChatService:
                     timestamp=datetime.fromisoformat(msg['timestamp']),
                     room=msg['room']
                 ))
-            
+
             return messages
-            
+
         except Exception as e:
             logger.error(f"Error getting recent messages: {str(e)}")
             return []
@@ -93,15 +94,15 @@ class ChatService:
         try:
             # Calculate offset for pagination
             offset = (page - 1) * per_page
-            
+
             # Get total count
             count_response = self.supabase_admin.table('chat_messages')\
                 .select('id', count='exact')\
                 .eq('room', room)\
                 .execute()
-            
+
             total = count_response.count or 0
-            
+
             # Get paginated messages
             response = self.supabase_admin.table('chat_messages')\
                 .select('*')\
@@ -109,7 +110,7 @@ class ChatService:
                 .order('timestamp', desc=True)\
                 .range(offset, offset + per_page - 1)\
                 .execute()
-            
+
             messages = []
             for msg in response.data:
                 messages.append(ChatMessageResponse(
@@ -120,12 +121,12 @@ class ChatService:
                     timestamp=datetime.fromisoformat(msg['timestamp']),
                     room=msg['room']
                 ))
-            
+
             # Reverse to get chronological order
             messages.reverse()
-            
+
             pages = (total + per_page - 1) // per_page if total > 0 else 0
-            
+
             return MessageHistoryResponse(
                 messages=messages,
                 total=total,
@@ -134,7 +135,7 @@ class ChatService:
                 has_next=page < pages,
                 has_prev=page > 1
             )
-            
+
         except Exception as e:
             logger.error(f"Error getting message history: {str(e)}")
             return MessageHistoryResponse(
@@ -154,24 +155,25 @@ class ChatService:
                 .select('*')\
                 .eq('id', message_id)\
                 .execute()
-            
+
             if not response.data:
                 raise MessageNotFoundException("Message not found")
-            
+
             message = response.data[0]
-            
+
             # Check if user is the author
             if message['user_id'] != user_id:
-                raise UnauthorizedMessageException("You can only delete your own messages")
-            
+                raise UnauthorizedMessageException(
+                    "You can only delete your own messages")
+
             # Delete the message
             delete_response = self.supabase_admin.table('chat_messages')\
                 .delete()\
                 .eq('id', message_id)\
                 .execute()
-            
+
             return len(delete_response.data) > 0
-            
+
         except Exception as e:
             logger.error(f"Error deleting message: {str(e)}")
             if isinstance(e, (MessageNotFoundException, UnauthorizedMessageException)):
@@ -184,14 +186,14 @@ class ChatService:
             response = self.supabase_admin.table('chat_messages')\
                 .select('room')\
                 .execute()
-            
+
             rooms = set()
             for msg in response.data:
                 if msg.get('room'):
                     rooms.add(msg['room'])
-            
+
             return list(rooms) if rooms else ['general']
-            
+
         except Exception as e:
             logger.error(f"Error getting active rooms: {str(e)}")
             return ['general']
@@ -199,20 +201,20 @@ class ChatService:
     def _validate_message_data(self, message_data: ChatMessageCreate):
         """Validate chat message data"""
         errors = []
-        
+
         if not message_data.message:
             errors.append('Message is required')
         elif len(message_data.message.strip()) == 0:
             errors.append('Message cannot be empty')
         elif len(message_data.message) > 1000:
             errors.append('Message cannot exceed 1000 characters')
-            
+
         if not message_data.user_id:
             errors.append('User ID is required')
-            
+
         if len(message_data.room) > 50:
             errors.append('Room name cannot exceed 50 characters')
-            
+
         if errors:
             raise MessageValidationException('; '.join(errors))
 
@@ -224,9 +226,9 @@ class ChatService:
                 .select('id', count='exact')\
                 .eq('room', room)\
                 .execute()
-            
+
             message_count = count_response.count or 0
-            
+
             # Get last message
             last_message_response = self.supabase_admin.table('chat_messages')\
                 .select('*')\
@@ -234,7 +236,7 @@ class ChatService:
                 .order('timestamp', desc=True)\
                 .limit(1)\
                 .execute()
-            
+
             last_message = None
             if last_message_response.data:
                 msg = last_message_response.data[0]
@@ -246,17 +248,17 @@ class ChatService:
                     timestamp=datetime.fromisoformat(msg['timestamp']),
                     room=msg['room']
                 )
-            
+
             return {
                 'room': room,
                 'message_count': message_count,
                 'last_message': last_message
             }
-            
+
         except Exception as e:
             logger.error(f"Error getting room statistics: {str(e)}")
             return {
                 'room': room,
                 'message_count': 0,
                 'last_message': None
-            } 
+            }

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../../../core/services/user.service';
-import { ApiService } from '../../../../core/services/api.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login-page',
@@ -24,7 +24,7 @@ export class LoginPageComponent implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private userService: UserService,
-    private apiService: ApiService
+    private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -33,7 +33,7 @@ export class LoginPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.userService.isAuthenticated()) {
+    if (this.authService.isAuthenticated()) {
       this.router.navigate(['/home']);
     }
   }
@@ -44,11 +44,11 @@ export class LoginPageComponent implements OnInit {
     }
 
     this.loading = true;
+    const { email, password } = this.loginForm.value;
 
-    this.apiService.post('/api/users/login', this.loginForm.value)
+    this.authService.login(email, password)
       .subscribe({
         next: (response: any) => {
-          this.userService.setCurrentUser(response.user);
           this.showSuccessPopup('Inicio de sesión exitoso', 'Bienvenido a Polimusic');
           setTimeout(() => {
             this.router.navigate(['/home']);
@@ -68,7 +68,6 @@ export class LoginPageComponent implements OnInit {
       });
   }
 
-  // Resto de los métodos permanecen igual...
   goToRegister(): void {
     this.router.navigate(['/auth/register']);
   }

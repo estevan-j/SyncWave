@@ -6,7 +6,7 @@ class MusicCreate(BaseModel):
     title: str = Field(..., description="Song title")
     artist: str = Field(..., description="Artist identifier or code")
     album: Optional[str] = Field(None, description="Album name")
-    audio_url: Optional[str] = Field(None, description="Public audio file URL")
+    url: Optional[str] = Field(None, description="Public audio file URL")
     cover_url: Optional[str] = Field(None, description="Cover image URL")
     artist_name: Optional[str] = Field(None, description="Artist's full name")
     artist_nickname: Optional[str] = Field(None, description="Artist's nickname")
@@ -27,7 +27,7 @@ class MusicResponse(BaseModel):
     artist: str
     album: Optional[str]
     duration: Optional[int]
-    audio_url: Optional[str]
+    url: Optional[str]
     cover_url: Optional[str]
     artist_name: Optional[str]
     artist_nickname: Optional[str]
@@ -35,3 +35,4 @@ class MusicResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        populate_by_name = True

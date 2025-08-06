@@ -9,7 +9,7 @@ class Music(db.Model):
     artist = Column(String(100), nullable=False)
     album = Column(String(100))
     duration = Column(Integer)
-    audio_url = Column(String(500))
+    url = Column(String(500))
     cover_url = Column(String(500))
     artist_name = Column(String(100))
     artist_nickname = Column(String(100))

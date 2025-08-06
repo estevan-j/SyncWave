@@ -1,13 +1,14 @@
 """
 Music Microservice - Configuración básica optimizada
 """
-from flask import Flask, jsonify, g
+from flask import Flask, jsonify, g, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from app.config import get_config
 from app.extensions import db
 from microservice_logging import get_logger, configure_root_logger, setup_request_logging
 from app.controllers.music_controller import music_bp
+import os
 
 
 # Configurar logging básico
@@ -29,15 +30,32 @@ def create_app(config_name=None):
     # Logging de request básico
     setup_request_logging(app)
 
-    # Configurar CORS básico
-    CORS(app,
-         origins=app.config.get('CORS_ORIGINS', ['*']),
-         supports_credentials=True,
-         allow_headers=['Content-Type', 'Authorization'])
+    # Configurar CORS SIMPLE Y DIRECTO
+    CORS(app, 
+         origins=['http://localhost:4200'],
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+         allow_headers=['Content-Type', 'Authorization'],
+         supports_credentials=True)
 
-    # Registrar blueprints (descomenta y ajusta cuando tengas blueprints)
-    # from app.controllers.music_controller import music_bp
+    # Manejar OPTIONS antes de cualquier cosa
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = jsonify({'status': 'OK'})
+            response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+            response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+            response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS")
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+            return response
+
+    # Registrar blueprints
     app.register_blueprint(music_bp)
+
+    # Add route to serve uploaded files
+    @app.route('/uploads/<filename>')
+    def uploaded_file(filename):
+        uploads_dir = os.path.join(os.getcwd(), 'uploads')
+        return send_from_directory(uploads_dir, filename)
 
     # Error handlers simplificados
     setup_basic_error_handlers(app)
@@ -109,4 +127,5 @@ def setup_basic_error_handlers(app):
         return jsonify({
             'error': 'Internal server error',
             'message': str(error),
-            'request_id': request_id}), 500
+            'request_id': request_id
+        }), 500

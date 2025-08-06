@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -23,5 +23,43 @@ export class ApiService {
 
   delete(endpoint: string) {
     return this.http.delete(`${this.API_BASE_URL}${endpoint}`);
+  }
+
+  // Método para peticiones POST autenticadas
+  postWithAuth(endpoint: string, body: any, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.API_BASE_URL}${endpoint}`, body, { headers });
+  }
+
+  // Método para peticiones GET autenticadas
+  getWithAuth(endpoint: string, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.get(`${this.API_BASE_URL}${endpoint}`, { headers });
+  }
+
+  // Método para peticiones PUT autenticadas
+  putWithAuth(endpoint: string, body: any, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.put(`${this.API_BASE_URL}${endpoint}`, body, { headers });
+  }
+
+  // Método para peticiones DELETE autenticadas
+  deleteWithAuth(endpoint: string, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.delete(`${this.API_BASE_URL}${endpoint}`, { headers });
   }
 }
