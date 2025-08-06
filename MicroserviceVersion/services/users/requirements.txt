@@ -20,5 +20,9 @@ python-dotenv==1.0.0
 prometheus-client==0.17.1
 psutil==5.9.5
 
+# WebSocket support (para funcionalidad de chat en tiempo real)
+flask-socketio==5.3.6
+python-socketio==5.9.0
+
 # ✅ IMPORTANTE: No incluir las librerías compartidas aquí
 # Se instalan directamente desde /app/shared/
