@@ -21,10 +21,48 @@ def create_app(config_name=None):
 
     app = Flask(__name__)
 
+
     # Cargar configuración
     config = get_config()
     app.config.from_object(config)
     config.init_app(app)
+
+    # Registrar blueprints
+    from app.controllers.auth_controller import auth_bp
+    app.register_blueprint(auth_bp)
+
+    # Inicializar Swagger (Flasgger) después de los blueprints y con configuración explícita
+    from flasgger import Swagger
+    swagger_config = {
+        "headers": [],
+        "specs": [
+            {
+                "endpoint": 'apispec_1',
+                "route": '/apispec_1.json',
+                "rule_filter": lambda rule: True,  # incluir todas las rutas
+                "model_filter": lambda tag: True,  # incluir todos los modelos
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        "swagger_ui": True,
+        "specs_route": "/apidocs/"
+    }
+    swagger_template = {
+        "swagger": "2.0",
+        "info": {
+            "title": "A swagger API",
+            "version": "0.0.1"
+        },
+        "securityDefinitions": {
+            "bearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'"
+            }
+        }
+    }
+    Swagger(app, config=swagger_config, template=swagger_template, merge=True)
 
     # ✅ Solo logging básico - sin correlation ID para ahorrar recursos
     # setup_request_logging(app)  # Removed custom logging setup
@@ -34,6 +72,7 @@ def create_app(config_name=None):
          origins=app.config.get('CORS_ORIGINS', ['*']),
          supports_credentials=True,
          allow_headers=['Content-Type', 'Authorization'])
+
 
     # Initialize SocketIO for WebSocket support
     socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
