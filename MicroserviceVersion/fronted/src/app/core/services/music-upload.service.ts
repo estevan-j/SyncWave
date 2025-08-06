@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEventType, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpEventType, HttpRequest, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { TrackModel } from '@core/models/tracks.model';
+import { AuthService } from '@core/services/auth.service';
 
 export interface UploadProgress {
     percentage: number;
@@ -40,7 +41,17 @@ export class MusicUploadService {
     private uploadProgress$ = new BehaviorSubject<UploadProgress | null>(null);
     private isUploading$ = new BehaviorSubject<boolean>(false);
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private authService: AuthService) { }
+
+    /**
+     * Crear headers con token de autorización
+     */
+    private getAuthHeaders(): HttpHeaders {
+        const token = this.authService.getToken(); // Usar el AuthService
+        return new HttpHeaders({
+            'Authorization': `Bearer ${token}`
+        });
+    }
 
     /**
      * Obtener progreso de subida
@@ -94,7 +105,9 @@ export class MusicUploadService {
                     error_code: 'INVALID_FILE'
                 });
             });
-        }        // Preparar FormData
+        }
+
+        // Preparar FormData
         const formData = new FormData();
         formData.append('file', songData.file);
         formData.append('title', songData.title);
@@ -121,11 +134,17 @@ export class MusicUploadService {
 
         if (songData.cover_url) {
             formData.append('cover_url', songData.cover_url);
-        } console.log('📤 Uploading song:', songData.title, 'by', songData.artist);
+        }
 
-        // Crear request con progreso
+        console.log('📤 Uploading song:', songData.title, 'by', songData.artist);
+
+        // Crear headers con token
+        const headers = this.getAuthHeaders();
+
+        // Crear request con progreso y headers
         const uploadRequest = new HttpRequest('POST', `${this.API_URL}/songs/upload`, formData, {
-            reportProgress: true
+            reportProgress: true,
+            headers: headers
         });
 
         this.isUploading$.next(true);
@@ -188,7 +207,8 @@ export class MusicUploadService {
 
     /**
      * Actualizar información de una canción existente
-     */    updateSong(songId: number, updateData: Partial<SongUploadData>): Observable<UploadResponse> {
+     */
+    updateSong(songId: number, updateData: Partial<SongUploadData>): Observable<UploadResponse> {
         const formData = new FormData();
 
         if (updateData.title) formData.append('title', updateData.title);
@@ -201,9 +221,14 @@ export class MusicUploadService {
         if (updateData.artist_name) formData.append('artist_name', updateData.artist_name);
         if (updateData.artist_nickname) formData.append('artist_nickname', updateData.artist_nickname);
         if (updateData.nationality) formData.append('nationality', updateData.nationality);
-        if (updateData.cover_url) formData.append('cover_url', updateData.cover_url); console.log('📝 Updating song:', songId);
+        if (updateData.cover_url) formData.append('cover_url', updateData.cover_url);
 
-        return this.http.put<UploadResponse>(`${this.API_URL}/songs/${songId}/upload`, formData);
+        console.log('📝 Updating song:', songId);
+
+        // Agregar headers con token
+        const headers = this.getAuthHeaders();
+
+        return this.http.put<UploadResponse>(`${this.API_URL}/songs/${songId}/upload`, formData, { headers });
     }
 
     /**
@@ -211,7 +236,11 @@ export class MusicUploadService {
      */
     deleteSong(songId: number): Observable<UploadResponse> {
         console.log('🗑️ Deleting song:', songId);
-        return this.http.delete<UploadResponse>(`${this.API_URL}/songs/${songId}`);
+        
+        // Agregar headers con token
+        const headers = this.getAuthHeaders();
+        
+        return this.http.delete<UploadResponse>(`${this.API_URL}/songs/${songId}`, { headers });
     }
 
     /**
