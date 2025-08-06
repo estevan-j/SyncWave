@@ -12,6 +12,31 @@ from app.exceptions.user_exceptions import (
 
 
 class AuthService:
+    from microservice_logging import get_logger
+    logger = get_logger("auth_service")
+    def find_user_by_email(self, email: str) -> Optional[dict]:
+        """
+        Busca un usuario por email en todas las páginas de Supabase.
+        Devuelve el dict del usuario si lo encuentra, None si no existe.
+        """
+        try:
+            page = 1
+            per_page = 100
+            while True:
+                users_response = self.supabase_admin.auth.admin.list_users(page=page, per_page=per_page)
+                users = users_response.data if hasattr(users_response, 'data') else users_response.get('data', [])
+                if not users:
+                    break
+                for user in users:
+                    if user.get("email", "").lower() == email.lower():
+                        return user
+                if len(users) < per_page:
+                    break
+                page += 1
+            return None
+        except Exception as e:
+            self.logger.debug(f"[DEBUG] Error en find_user_by_email: {repr(e)}")
+            return None
     """Service class for authentication-related operations"""
 
     def __init__(self):
@@ -75,75 +100,99 @@ class AuthService:
 
     def verify_email_exists(self, email: str) -> bool:
         """
-        Verify if email exists in the system.
-        This is step 1 of password reset flow.
-        
-        Args:
-            email: Email to verify
-            
-        Returns:
-            bool: True if email exists, False otherwise
+        Verifica si el email existe realmente en Supabase usando paginación robusta.
         """
-        try:
-            # Use admin client to check if user exists by email
-            # This is a workaround since Supabase doesn't have a direct "check user exists" method
-            # We'll try to get user info using admin privileges
-            
-            # Alternative approach: try to initiate password reset
-            # Supabase will not throw error if user doesn't exist (for security)
-            self.supabase.auth.reset_password_email(email)
-            
-            # For security reasons, we return True regardless
-            # The actual verification happens when user receives email
+        user = self.find_user_by_email(email)
+        if user:
+            self.logger.debug(f"[DEBUG] Usuario encontrado en verify_email_exists: {user}")
             return True
-            
-        except Exception:
-            # If there's an error with the email format or service
-            return False
+        self.logger.debug(f"[DEBUG] Usuario NO encontrado en verify_email_exists para email: {email}")
+        return False
 
-    def reset_password(self, email: str, new_password: str) -> bool:
+def reset_password(self, email: str, new_password: str) -> bool:
+    """
+    Reset user password directly.
+    This is step 2 of password reset flow (after email verification).
+
+    Args:
+        email: User's email
+        new_password: New password to set
+
+    Returns:
+        bool: True if password reset successful
+
+    Raises:
+        AuthenticationException: If reset fails
+    """
+    try:
+        # Get user by email using admin client
+        users_response = self.supabase_admin.auth.admin.list_users()
+        users = users_response.data if hasattr(users_response, 'data') else users_response.get('data', [])
+        user_id = None
+        for user in users:
+            if user.get("email", "").lower() == email.lower():
+                user_id = user.get("id")
+                break
+
+        if not user_id:
+            raise AuthenticationException("User not found")
+
+        # Update password using admin client
+        response = self.supabase_admin.auth.admin.update_user_by_id(
+            user_id,
+            {"password": new_password}
+        )
+
+        user_obj = None
+        if hasattr(response, "user"):
+            user_obj = response.user
+        elif isinstance(response, dict) and "user" in response:
+            user_obj = response["user"]
+        elif isinstance(response, dict) and "data" in response:
+            user_obj = response["data"]
+
+        if not user_obj:
+            raise AuthenticationException("Password reset failed")
+
+        return True
+
+    except AuthenticationException:
+        raise
+    except Exception as e:
+        raise AuthenticationException(f"Password reset failed: {str(e)}")
         """
-        Reset user password directly.
-        This is step 2 of password reset flow (after email verification).
-        
-        Args:
-            email: User's email
-            new_password: New password to set
-            
-        Returns:
-            bool: True if password reset successful
-            
-        Raises:
-            AuthenticationException: If reset fails
+        Reset user password directly usando búsqueda robusta por email.
+        Lanza UserNotFoundException si el usuario no existe.
         """
         try:
-            # Get user by email using admin client
-            users_response = self.supabase_admin.auth.admin.list_users()
-            
-            user_id = None
-            if users_response.users:
-                for user in users_response.users:
-                    if user.email == email:
-                        user_id = user.id
-                        break
-            
-            if not user_id:
-                raise AuthenticationException("User not found")
-            
-            # Update password using admin client
+            user = self.find_user_by_email(email)
+            if not user:
+                self.logger.debug(f"[DEBUG] Usuario NO encontrado en reset_password para email: {email}")
+                from app.exceptions.user_exceptions import UserNotFoundException
+                raise UserNotFoundException(f"User with email '{email}' not found")
+            user_id = user.get("id")
+            self.logger.debug(f"[DEBUG] Usuario encontrado en reset_password: {user}")
             response = self.supabase_admin.auth.admin.update_user_by_id(
                 user_id,
                 {"password": new_password}
             )
-            
-            if not response.user:
-                raise AuthenticationException("Password reset failed")
-            
+            user_obj = None
+            if hasattr(response, "user"):
+                user_obj = response.user
+            elif isinstance(response, dict) and "user" in response:
+                user_obj = response["user"]
+            elif isinstance(response, dict) and "data" in response:
+                user_obj = response["data"]
+            if not user_obj:
+                self.logger.debug(f"[DEBUG] Respuesta inesperada en reset_password: {response}")
+                raise AuthenticationException(f"Password reset failed: respuesta inesperada {response}")
             return True
-            
+        except UserNotFoundException:
+            raise
         except AuthenticationException:
             raise
         except Exception as e:
+            self.logger.debug(f"[DEBUG] Error en reset_password: {repr(e)}")
             raise AuthenticationException(f"Password reset failed: {str(e)}")
 
     def logout(self, token: Optional[str] = None) -> bool:

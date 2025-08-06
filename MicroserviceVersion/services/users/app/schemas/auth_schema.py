@@ -7,7 +7,7 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, description="The user's password")
 
 class UserResponse(BaseModel):
-    id: int
+    id: str  # UUID de Supabase
     name: str
     class Config:
         orm_mode = True

@@ -1,5 +1,6 @@
-# Flask y extensiones
-Flask==2.3.3
+# Documentación interactiva
+flasgger==0.9.5
+Flask==2.2.5
 Flask-SQLAlchemy==3.0.5
 Flask-CORS==4.0.0
 # Validación de datos

@@ -1,0 +1,8 @@
+setup.py
+microservice_logging/__init__.py
+microservice_logging/logger.py
+microservice_logging/middleware.py
+microservice_logging.egg-info/PKG-INFO
+microservice_logging.egg-info/SOURCES.txt
+microservice_logging.egg-info/dependency_links.txt
+microservice_logging.egg-info/top_level.txt

@@ -13,16 +13,16 @@ RUN adduser --disabled-password --gecos '' appuser
 
 WORKDIR /app
 
-COPY services/users/requirements.txt .
+COPY MicroserviceVersion/services/users/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 
-COPY shared/logging ./shared/logging
+COPY MicroserviceVersion/shared/logging ./shared/logging
 RUN pip install -e ./shared/logging
 
 # Copia el código de la app y el run.py fuera de /app
-COPY services/users/app/ ./app/
-COPY services/users/run.py ./
+COPY MicroserviceVersion/services/users/app/ ./app/
+COPY MicroserviceVersion/services/users/run.py ./
 
 RUN chown -R appuser:appuser /app
 USER appuser

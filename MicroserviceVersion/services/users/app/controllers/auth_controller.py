@@ -1,3 +1,4 @@
+from flasgger import swag_from
 from flask import Blueprint, request, jsonify, g
 from app.schemas.auth_schema import LoginRequest, TokenResponse, UserResponse, UserCreate
 from app.services.auth_service import AuthService
@@ -83,9 +84,58 @@ def handle_service_response(func):
     return wrapper
 
 @auth_bp.route('/signup', methods=['POST'])
+@swag_from({
+    'parameters': [
+        {
+            'in': 'body',
+            'name': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'email': {'type': 'string'},
+                    'password': {'type': 'string'}
+                },
+                'required': ['email', 'password']
+            }
+        }
+    ],
+    'responses': {
+        201: {'description': 'Usuario creado exitosamente'},
+        400: {'description': 'Datos inválidos'},
+        409: {'description': 'Usuario ya existe'}
+    },
+    'tags': ['auth']
+})
 @handle_service_response
 def signup():
-    """Endpoint for user signup"""
+    """
+    Registro de usuario
+    ---
+    tags:
+      - auth
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          required:
+            - email
+            - password
+    responses:
+      201:
+        description: Usuario creado exitosamente
+      400:
+        description: Datos inválidos
+      409:
+        description: Usuario ya existe
+    """
     request_id = getattr(g, 'request_id', 'unknown')
     
     data = request.get_json()
@@ -116,9 +166,58 @@ def signup():
     }), 201
 
 @auth_bp.route('/login', methods=['POST'])
+@swag_from({
+    'parameters': [
+        {
+            'in': 'body',
+            'name': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'email': {'type': 'string'},
+                    'password': {'type': 'string'}
+                },
+                'required': ['email', 'password']
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Login exitoso'},
+        400: {'description': 'Datos inválidos'},
+        401: {'description': 'Credenciales inválidas'}
+    },
+    'tags': ['auth']
+})
 @handle_service_response
 def login():
-    """Endpoint for user login"""
+    """
+    Login de usuario
+    ---
+    tags:
+      - auth
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+            password:
+              type: string
+          required:
+            - email
+            - password
+    responses:
+      200:
+        description: Login exitoso
+      400:
+        description: Datos inválidos
+      401:
+        description: Credenciales inválidas
+    """
     request_id = getattr(g, 'request_id', 'unknown')
     
     data = request.get_json()
@@ -151,7 +250,19 @@ def login():
 @auth_bp.route('/logout', methods=['POST'])
 @handle_service_response
 def logout():
-    """Endpoint for user logout"""
+    """
+    Logout de usuario
+    ---
+    tags:
+      - auth
+    security:
+      - bearerAuth: []
+    responses:
+      200:
+        description: Logout exitoso
+      400:
+        description: Logout fallido
+    """
     request_id = getattr(g, 'request_id', 'unknown')
     
     auth_header = request.headers.get('Authorization')
@@ -175,9 +286,58 @@ def logout():
 
 # ✅ Endpoints simplificados - resto igual pero sin logging excesivo
 @auth_bp.route('/reset-password', methods=['POST'])
+@swag_from({
+    'parameters': [
+        {
+            'in': 'body',
+            'name': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'email': {'type': 'string'},
+                    'new_password': {'type': 'string'}
+                },
+                'required': ['email', 'new_password']
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Contraseña reseteada exitosamente'},
+        400: {'description': 'Datos inválidos'},
+        404: {'description': 'Email no encontrado'}
+    },
+    'tags': ['auth']
+})
 @handle_service_response
 def reset_password():
-    """Endpoint for password reset"""
+    """
+    Reset de contraseña
+    ---
+    tags:
+      - auth
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+            new_password:
+              type: string
+          required:
+            - email
+            - new_password
+    responses:
+      200:
+        description: Contraseña reseteada exitosamente
+      400:
+        description: Datos inválidos
+      404:
+        description: Email no encontrado
+    """
     request_id = getattr(g, 'request_id', 'unknown')
     
     data = request.get_json()
@@ -216,9 +376,51 @@ def reset_password():
         }), 400
 
 @auth_bp.route('/verify-email', methods=['POST'])
+@swag_from({
+    'parameters': [
+        {
+            'in': 'body',
+            'name': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'email': {'type': 'string'}
+                },
+                'required': ['email']
+            }
+        }
+    ],
+    'responses': {
+        200: {'description': 'Email verificado'},
+        400: {'description': 'Email requerido'}
+    },
+    'tags': ['auth']
+})
 @handle_service_response
 def verify_email():
-    """Endpoint to verify if email exists"""
+    """
+    Verificar si el email existe
+    ---
+    tags:
+      - auth
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+          required:
+            - email
+    responses:
+      200:
+        description: Email verificado
+      400:
+        description: Email requerido
+    """
     request_id = getattr(g, 'request_id', 'unknown')
     
     data = request.get_json()
