@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TrackModel } from '@core/models/tracks.model';
+import { AuthService } from '@core/services/auth.service';
 
 @Injectable({
     providedIn: 'root'
@@ -14,11 +15,25 @@ export class TracksService {
     private tracksRefreshSubject = new BehaviorSubject<boolean>(false);
     public tracksRefresh$ = this.tracksRefreshSubject.asObservable();
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, private authService: AuthService) { }
+
+    /**
+     * Crear headers con token de autorización
+     */
+    private getAuthHeaders(): HttpHeaders {
+        const token = this.authService.getToken(); // Usar el AuthService
+        return new HttpHeaders({
+            'Authorization': `Bearer ${token}`
+        });
+    }
 
     getAllTracks(): Observable<TrackModel[]> {
         console.log('Calling API:', `${this.API_URL}/songs`);
-        return this.http.get<any>(`${this.API_URL}/songs`).pipe(
+        
+        // Agregar headers con token
+        const headers = this.getAuthHeaders();
+        
+        return this.http.get<any>(`${this.API_URL}/songs`, { headers }).pipe(
             map(response => {
                 console.log('Raw API response:', response);
 
@@ -71,11 +86,17 @@ export class TracksService {
     }
 
     getTrackById(id: string): Observable<TrackModel> {
-        return this.http.get<TrackModel>(`${this.API_URL}/tracks/${id}`);
+        // Agregar headers con token
+        const headers = this.getAuthHeaders();
+        
+        return this.http.get<TrackModel>(`${this.API_URL}/tracks/${id}`, { headers });
     }
 
     searchTracks(query: string): Observable<TrackModel[]> {
-        return this.http.get<TrackModel[]>(`${this.API_URL}/search?q=${query}`);
+        // Agregar headers con token
+        const headers = this.getAuthHeaders();
+        
+        return this.http.get<TrackModel[]>(`${this.API_URL}/search?q=${query}`, { headers });
     }
 
     /**
@@ -116,7 +137,10 @@ export class TracksService {
         const searchUrl = `${this.API_URL}/songs/search?${params.toString()}`;
         console.log('🌐 Search URL:', searchUrl);
 
-        return this.http.get<any>(searchUrl).pipe(
+        // Agregar headers con token
+        const headers = this.getAuthHeaders();
+
+        return this.http.get<any>(searchUrl, { headers }).pipe(
             map(response => {
                 console.log('🔍 Search API response:', response);
 
@@ -147,7 +171,9 @@ export class TracksService {
                         created_at: song.created_at || new Date().toISOString(),
                         explicit: song.explicit || false
                     };
-                }); console.log('✅ Search results transformed:', transformedTracks.length, 'tracks');
+                });
+
+                console.log('✅ Search results transformed:', transformedTracks.length, 'tracks');
                 return transformedTracks;
             })
         );
