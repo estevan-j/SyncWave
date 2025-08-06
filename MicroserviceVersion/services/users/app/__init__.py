@@ -3,16 +3,17 @@ Users Authentication Microservice - Configuración básica optimizada
 """
 from flask import Flask, jsonify, g
 from flask_cors import CORS
+from flask_socketio import SocketIO
 from app.config import get_config
 from app.controllers.auth_controller import auth_bp
 
-from microservice_logging import get_logger, configure_root_logger, setup_request_logging
-# Configurar logging básico
-configure_root_logger()
+import logging
 
+# Configurar logging básico
+logging.basicConfig(level=logging.INFO)
 
 # Logger principal - solo para errores importantes
-app_logger = get_logger("users-auth-app")
+app_logger = logging.getLogger("users-auth-app")
 
 
 def create_app(config_name=None):
@@ -26,7 +27,7 @@ def create_app(config_name=None):
     config.init_app(app)
 
     # ✅ Solo logging básico - sin correlation ID para ahorrar recursos
-    setup_request_logging(app)
+    # setup_request_logging(app)  # Removed custom logging setup
 
     # Configurar CORS básico
     CORS(app,
@@ -34,9 +35,29 @@ def create_app(config_name=None):
          supports_credentials=True,
          allow_headers=['Content-Type', 'Authorization'])
 
+    # Initialize SocketIO for WebSocket support
+    socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
+
     # Registrar blueprints
     from app.controllers.auth_controller import auth_bp
+    from app.controllers.chat_controller import chat_bp
     app.register_blueprint(auth_bp)
+    app.register_blueprint(chat_bp)
+
+    # Register WebSocket event handlers
+    from app.controllers.websocket_controller import (
+        handle_connect, handle_disconnect, handle_join_room, handle_leave_room,
+        handle_send_message, handle_get_message_history, handle_typing, handle_get_connected_users
+    )
+    
+    socketio.on_event('connect', handle_connect)
+    socketio.on_event('disconnect', handle_disconnect)
+    socketio.on_event('join_room', handle_join_room)
+    socketio.on_event('leave_room', handle_leave_room)
+    socketio.on_event('send_message', handle_send_message)
+    socketio.on_event('get_message_history', handle_get_message_history)
+    socketio.on_event('typing', handle_typing)
+    socketio.on_event('get_connected_users', handle_get_connected_users)
 
     # ✅ Error handlers simplificados
     setup_basic_error_handlers(app)
@@ -56,7 +77,7 @@ def create_app(config_name=None):
 def setup_basic_error_handlers(app):
     """Error handlers básicos para práctica"""
 
-    error_logger = get_logger("error_handler")
+    error_logger = logging.getLogger("error_handler")
 
     @app.errorhandler(400)
     def bad_request(error):
