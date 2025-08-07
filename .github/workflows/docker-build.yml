@@ -50,31 +50,29 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Music Service
-        if: steps.check-music.outputs.music_exists == 'true'
-        uses: docker/build-push-action@v5
-        with:
-          context: ./MicroserviceVersion/services/musics
-          file: ./MicroserviceVersion/services/musics/Dockerfile
-          push: true
-          tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/musics-service:latest
-            ${{ env.DOCKERHUB_USERNAME }}/musics-service:${{ github.run_number }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # ✅ AGREGADO: Verificar si Music Service Dockerfile existe
+      - name: Check if Music Service Dockerfile exists
+        id: check-music
+        run: |
+          if [ -f "MicroserviceVersion/services/musics/Dockerfile" ]; then
+            echo "music_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Music Service Dockerfile encontrado"
+          else
+            echo "music_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Music Service Dockerfile NO encontrado"
+          fi
 
-      - name: Build and push Users Service
-        if: steps.check-users.outputs.users_exists == 'true'
-        uses: docker/build-push-action@v5
-        with:
-          context: ./MicroserviceVersion/services/users
-          file: ./MicroserviceVersion/services/users/Dockerfile
-          push: true
-          tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/users-service:latest
-            ${{ env.DOCKERHUB_USERNAME }}/users-service:${{ github.run_number }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # ✅ AGREGADO: Verificar si Users Service Dockerfile existe
+      - name: Check if Users Service Dockerfile exists
+        id: check-users
+        run: |
+          if [ -f "MicroserviceVersion/services/users/Dockerfile" ]; then
+            echo "users_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Users Service Dockerfile encontrado"
+          else
+            echo "users_exists=false" >> $GITHUB_OUTPUT
+            echo "❌ Users Service Dockerfile NO encontrado"
+          fi
 
       - name: Check if Chat Service Dockerfile exists
         id: check-chat
@@ -98,11 +96,12 @@ jobs:
             echo "❌ Frontend Dockerfile NO encontrado"
           fi
 
+      # ✅ CORREGIDO: Build Music Service (sin duplicados)
       - name: Build and push Music Service
         if: steps.check-music.outputs.music_exists == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./MicroserviceVersion
+          context: ./MicroserviceVersion/services/musics
           file: ./MicroserviceVersion/services/musics/Dockerfile
           push: true
           tags: |
@@ -111,11 +110,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # ✅ CORREGIDO: Build Users Service (sin duplicados)
       - name: Build and push Users Service
         if: steps.check-users.outputs.users_exists == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./MicroserviceVersion
+          context: ./MicroserviceVersion/services/users
           file: ./MicroserviceVersion/services/users/Dockerfile
           push: true
           tags: |
@@ -128,7 +128,7 @@ jobs:
         if: steps.check-chat.outputs.chat_exists == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./MicroserviceVersion
+          context: ./MicroserviceVersion/services/chat
           file: ./MicroserviceVersion/services/chat/Dockerfile
           push: true
           tags: |
