@@ -67,23 +67,24 @@ jobs:
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
             # Crear directorios si no existen
-            mkdir -p ${{ env.PROJECT_PATH }}/services/users
-            mkdir -p ${{ env.PROJECT_PATH }}/services/musics
+            mkdir -p ${{ env.COMPOSE_PATH }}/services/users
+            mkdir -p ${{ env.COMPOSE_PATH }}/services/musics
 
             # Crear .env para users service
-            cat > ${{ env.PROJECT_PATH }}/services/users/.env << 'EOF'
+            cat > ${{ env.COMPOSE_PATH }}/services/users/.env << 'EOF'
             ${{ secrets.USERS_ENV }}
             EOF
 
             # Crear .env para music service
-            cat > ${{ env.PROJECT_PATH }}/services/musics/.env << 'EOF'
+            cat > ${{ env.COMPOSE_PATH }}/services/musics/.env << 'EOF'
             ${{ secrets.MUSICS_ENV }}
             EOF
 
             # Verificar que los archivos se crearon
             echo "Archivos .env creados:"
-            ls -la ${{ env.PROJECT_PATH }}/services/users/.env
-            ls -la ${{ env.PROJECT_PATH }}/services/musics/.env
+            ls -la ${{ env.COMPOSE_PATH }}/services/users/.env
+            ls -la ${{ env.COMPOSE_PATH }}/services/musics/.env
+
       # Desplegar aplicación
       - name: Deploy aplicación con Docker Compose
         uses: appleboy/ssh-action@v1.0.3
