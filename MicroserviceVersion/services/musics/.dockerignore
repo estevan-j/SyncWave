@@ -20,4 +20,3 @@ Dockerfile
 README.md
 # Ignora todo excepto lo necesario para el build
 !services/musics/**
-!shared/logging/**

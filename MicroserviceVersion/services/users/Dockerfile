@@ -13,16 +13,11 @@ RUN adduser --disabled-password --gecos '' appuser
 
 WORKDIR /app
 
-COPY services/users/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-
-COPY shared/logging ./shared/logging
-RUN pip install -e ./shared/logging
-
-# Copia el código de la app y el run.py fuera de /app
-COPY services/users/app/ ./app/
-COPY services/users/run.py ./
+COPY app/ ./app/
+COPY run.py ./
 
 RUN chown -R appuser:appuser /app
 USER appuser
@@ -34,5 +29,8 @@ ENV FLASK_APP=run.py \
     SERVICE_NAME=users \
     SERVICE_VERSION=1.0.0 \
     LOG_LEVEL=WARNING
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:5000/health || exit 1
 
 CMD ["python", "run.py"]

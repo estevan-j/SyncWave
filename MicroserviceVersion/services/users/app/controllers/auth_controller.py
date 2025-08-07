@@ -11,7 +11,7 @@ import functools  # <-- Agregado
 import logging  # <-- Agregado
 
 # ✅ Solo logging básico
-from microservice_logging import get_logger
+logger = logging.getLogger("auth_controller")
 
 # Blueprint
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
@@ -19,8 +19,6 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 # Instancia del servicio
 auth_service = AuthService()
 
-# ✅ Logger básico - solo para errores importantes
-logger = get_logger("auth_controller")
 
 def handle_service_response(func):
     """Decorador simplificado para manejo de respuestas"""

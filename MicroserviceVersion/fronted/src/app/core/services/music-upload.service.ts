@@ -44,7 +44,7 @@ export interface UploadResponse {
     providedIn: 'root'
 })
 export class MusicUploadService {
-    private readonly API_URL = `${environment.musicsApiUrl}/api/musics`;
+    private readonly API_URL = `${environment.apiUrl}/api/musics`;
 
     private uploadProgress$ = new BehaviorSubject<UploadProgress | null>(null);
     private isUploading$ = new BehaviorSubject<boolean>(false);

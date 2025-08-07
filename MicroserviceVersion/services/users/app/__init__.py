@@ -29,16 +29,23 @@ def create_app(config_name=None):
     config.init_app(app)
 
     # Configurar CORS MEJORADO - antes de SocketIO
-    cors_origins = app.config.get('CORS_ORIGINS', ['http://localhost:4200'])
+    
+    cors_origins = app.config.get('CORS_ORIGINS', [
+        'http://localhost:4200',
+        'http://localhost:8090',
+        'http://syncwave-frontend:4200',
+        'http://syncwave-api-gateway:8080',
+        'http://syncwave-nginx:80'
+    ])
     if isinstance(cors_origins, str):
         cors_origins = [origin.strip() for origin in cors_origins.split(',')]
-
+    
     CORS(app,
-         origins="*",
+         origins=cors_origins,
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
          allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-         supports_credentials=False)  # Cambiar a False con origins="*"
-    
+         supports_credentials=True
+    )
     # Agregar handler explícito para OPTIONS (preflight) ANTES de SocketIO
 
     @app.before_request
@@ -59,6 +66,10 @@ def create_app(config_name=None):
                       cors_allowed_origins=cors_origins,
                       logger=False,  # Reducir logs de SocketIO
                       engineio_logger=False)
+
+    # Inicializar middleware de métricas
+    from app.metrics_middleware import metrics_middleware
+    metrics_middleware.init_app(app)
 
     # Registrar blueprints
     from app.controllers.auth_controller import auth_bp

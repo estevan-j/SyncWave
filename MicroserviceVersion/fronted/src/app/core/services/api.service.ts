@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../environments/environment'; // Asegúrate de que la ruta sea correcta
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly API_BASE_URL = 'http://localhost:5000'; // Ajusta esta URL según tu backend
+  private readonly API_BASE_URL = environment.apiUrl; // Usa la variable del environment
 
   constructor(private http: HttpClient) { }
 
@@ -25,7 +26,6 @@ export class ApiService {
     return this.http.delete(`${this.API_BASE_URL}${endpoint}`);
   }
 
-  // Método para peticiones POST autenticadas
   postWithAuth(endpoint: string, body: any, token: string) {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
@@ -35,7 +35,6 @@ export class ApiService {
     return this.http.post(`${this.API_BASE_URL}${endpoint}`, body, { headers });
   }
 
-  // Método para peticiones GET autenticadas
   getWithAuth(endpoint: string, token: string) {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`
@@ -44,7 +43,6 @@ export class ApiService {
     return this.http.get(`${this.API_BASE_URL}${endpoint}`, { headers });
   }
 
-  // Método para peticiones PUT autenticadas
   putWithAuth(endpoint: string, body: any, token: string) {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`,
@@ -54,7 +52,6 @@ export class ApiService {
     return this.http.put(`${this.API_BASE_URL}${endpoint}`, body, { headers });
   }
 
-  // Método para peticiones DELETE autenticadas
   deleteWithAuth(endpoint: string, token: string) {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${token}`

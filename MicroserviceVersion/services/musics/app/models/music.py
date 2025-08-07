@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, TIMESTAMP, func
 
 class Music(db.Model):
     __tablename__ = 'songs'
+    __table_args__ = {'schema': 'music'} 
 
     id = Column(Integer, primary_key=True)
     title = Column(String(200), nullable=False)

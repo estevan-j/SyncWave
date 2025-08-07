@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "api-gateway"
+    static_configs:
+      - targets: ["api-gateway:8080"]
+    metrics_path: /metrics
+
+  - job_name: "users-service"
+    static_configs:
+      - targets: ["users-service:5000"]
+    metrics_path: /metrics
+
+  - job_name: "music-service"
+    static_configs:
+      - targets: ["music-service:5001"]
+    metrics_path: /metrics
+
+  - job_name: "frontend"
+    static_configs:
+      - targets: ["frontend:4200"]
+    metrics_path: /metrics

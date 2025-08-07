@@ -1,13 +1,21 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://your-production-api.com', // Tu URL de producción
+    apiUrl: 'http://localhost:8090', // URL del API Gateway en producción (ajusta si usas Nginx o dominio público)
     apiEndpoints: {
         auth: {
-            login: '/api/users/login',
-            signup: '/api/users/signup',
-            logout: '/api/users/logout',
-            verifyEmail: '/api/users/verify-email',
-            resetPassword: '/api/users/reset-password'
+            login: '/api/auth/login',
+            signup: '/api/auth/signup',
+            logout: '/api/auth/logout',
+            verifyEmail: '/api/auth/verify-email',
+            resetPassword: '/api/auth/reset-password'
+        },
+        musics: {
+            getAll: '/api/musics/',
+            getById: '/api/musics/', // se concatena el id
+            create: '/api/musics/',
+            update: '/api/musics/', // se concatena el id
+            delete: '/api/musics/', // se concatena el id
+            upload: '/api/musics/upload'
         }
     }
 };

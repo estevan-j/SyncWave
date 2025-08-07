@@ -7,12 +7,10 @@ from app.utils.supabase_client import supabase
 from pydantic import ValidationError
 import logging
 
-from microservice_logging import get_logger
-
 music_bp = Blueprint('music', __name__, url_prefix='/api/musics')
 
 # Logger básico para el controlador
-logger = get_logger("music_controller")
+logger = logging.getLogger("music_controller")
 
 # GET /musics - SIN AUTH TEMPORALMENTE
 @music_bp.route('/', methods=['GET', 'OPTIONS'])
@@ -171,14 +169,13 @@ def upload_music_file():
         response.headers.add('Access-Control-Allow-Methods', "POST,OPTIONS")
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
-    
+
     request_id = getattr(g, 'request_id', 'unknown')
-    
-    # Check if file exists in request
+
     if 'file' not in request.files:
         logger.warning("No file field in request", extra={'custom_request_id': request_id})
         return jsonify({'error': 'No file field in request', 'request_id': request_id}), 400
-    
+
     file = request.files['file']
     if not file or file.filename == '':
         logger.warning("No file selected", extra={'custom_request_id': request_id})
@@ -191,45 +188,33 @@ def upload_music_file():
         return jsonify({'error': 'Invalid file extension', 'request_id': request_id}), 400
 
     try:
-        # Create uploads directory if it doesn't exist
-        uploads_dir = os.path.join(os.getcwd(), 'uploads')
-        if not os.path.exists(uploads_dir):
-            os.makedirs(uploads_dir)
-        
-        # Generate unique filename to avoid conflicts
         import uuid
         import time
         timestamp = int(time.time())
         file_extension = filename.rsplit('.', 1)[1].lower()
         unique_filename = f"{timestamp}_{uuid.uuid4().hex[:8]}.{file_extension}"
-        
-        file_path = os.path.join(uploads_dir, unique_filename)
-        
-        # Validate file size (50MB limit)
+
+        # Validar tamaño (50MB)
         file.seek(0, os.SEEK_END)
         file_size = file.tell()
-        file.seek(0)  # Reset file pointer
-        
-        max_size = 50 * 1024 * 1024  # 50MB limit
+        file.seek(0)
+        max_size = 50 * 1024 * 1024
         if file_size > max_size:
             logger.warning(f"File too large: {file_size} bytes", extra={'custom_request_id': request_id})
             return jsonify({'error': 'File too large (max 50MB)', 'request_id': request_id}), 400
-        
-        # Save file locally
-        try:
-            file.save(file_path)
-            logger.info("File saved locally", extra={'custom_request_id': request_id, 'file': unique_filename})
-        except Exception as save_error:
-            logger.error(f"Failed to save file: {str(save_error)}", extra={'custom_request_id': request_id})
-            return jsonify({'error': 'Failed to save file', 'details': str(save_error), 'request_id': request_id}), 500
 
-        # Generate public URL (for local development)
-        public_url = f"http://localhost:5001/uploads/{unique_filename}"
+        # Subir a Supabase Storage
+        file_bytes = file.read()
+        bucket_name = "musics"  # Cambia esto si tu bucket tiene otro nombre
+        supabase.storage.from_(bucket_name).upload(unique_filename, file_bytes, {"content-type": file.mimetype})
 
-        logger.info("File uploaded successfully", extra={'custom_request_id': request_id, 'file': unique_filename})
+        # Obtener URL pública
+        public_url = supabase.storage.from_(bucket_name).get_public_url(unique_filename)
+
+        logger.info("File uploaded to Supabase", extra={'custom_request_id': request_id, 'file': unique_filename})
 
         return jsonify({
-            'message': 'File uploaded successfully', 
+            'message': 'File uploaded successfully',
             'url': public_url,
             'filename': unique_filename,
             'original_filename': filename,

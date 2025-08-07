@@ -1,7 +1,6 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:5000', // URL de desarrollo para users/auth
-    musicsApiUrl: 'http://localhost:5001', // URL específica para el microservicio de musics
+    apiUrl: 'http://localhost:8090', // URL única del API Gateway para todos los servicios
     apiEndpoints: {
         auth: {
             login: '/api/auth/login',

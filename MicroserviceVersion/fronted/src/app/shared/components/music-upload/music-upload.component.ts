@@ -4,6 +4,8 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { MusicUploadService, CreateSongData, UploadProgress } from '@core/services/music-upload.service';
 import { TracksService } from '@core/services/tracks.service';
 import { Subject, takeUntil } from 'rxjs';
+import { environment } from '../../../../environments/environment';
+
 import { HttpClient, HttpEventType, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -129,7 +131,10 @@ export class MusicUploadComponent implements OnInit, OnDestroy {
         const formData = new FormData();
         formData.append('file', file);
 
-        this.http.post<any>('http://localhost:5001/api/musics/upload', formData, {
+        // Usar la URL base del environment
+        const uploadUrl = `${environment.apiUrl}/musics/upload`;
+
+        this.http.post<any>(uploadUrl, formData, {
             reportProgress: true,
             observe: 'events',
             headers: new HttpHeaders({})

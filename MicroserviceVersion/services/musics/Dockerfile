@@ -15,21 +15,17 @@ RUN adduser --disabled-password --gecos '' appuser
 
 WORKDIR /app
 
-COPY services/musics/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia la librería compartida de logging
-COPY shared/logging ./shared/logging
-RUN pip install -e ./shared/logging
-
 # Copia el código de la app y el run.py fuera de /app
-COPY services/musics/app/ ./app/
-COPY services/musics/run.py ./
+COPY app/ ./app/
+COPY run.py ./
 
 RUN chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 5000
+EXPOSE 5001
 
 ENV FLASK_APP=run.py \
     FLASK_ENV=production \
@@ -38,6 +34,6 @@ ENV FLASK_APP=run.py \
     LOG_LEVEL=WARNING
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5000/health || exit 1
+  CMD curl -f http://localhost:5001/health || exit 1
 
 CMD ["python", "run.py"]

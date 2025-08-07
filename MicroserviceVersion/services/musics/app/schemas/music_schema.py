@@ -6,6 +6,7 @@ class MusicCreate(BaseModel):
     title: str = Field(..., description="Song title")
     artist: str = Field(..., description="Artist identifier or code")
     album: Optional[str] = Field(None, description="Album name")
+    duration: Optional[int] = Field(None, description="Duration in seconds")
     url: Optional[str] = Field(None, description="Public audio file URL")
     cover_url: Optional[str] = Field(None, description="Cover image URL")
     artist_name: Optional[str] = Field(None, description="Artist's full name")
