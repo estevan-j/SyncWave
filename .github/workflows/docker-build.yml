@@ -88,7 +88,7 @@ jobs:
       - name: Check if Frontend Dockerfile exists
         id: check-frontend
         run: |
-          if [ -f "frontend/Dockerfile" ]; then
+          if [ -f "fronted/Dockerfile" ]; then
             echo "frontend_exists=true" >> $GITHUB_OUTPUT
             echo "✅ Frontend Dockerfile encontrado"
           else
@@ -141,8 +141,8 @@ jobs:
         if: steps.check-frontend.outputs.frontend_exists == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
+          context: ./fronted
+          file: ./fronted/Dockerfile
           push: true
           tags: |
             ${{ env.DOCKERHUB_USERNAME }}/syncwave-frontend:latest

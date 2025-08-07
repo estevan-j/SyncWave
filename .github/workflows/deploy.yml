@@ -47,8 +47,9 @@ jobs:
           script: |
             cd /home/${{ secrets.AZURE_VM_USER }}
 
-            # Si el directorio no existe, clonarlo
-            if [ ! -d "SyncWave" ]; then
+            # Si el directorio no existe o no es un repo git, clonarlo de nuevo
+            if [ ! -d "SyncWave/.git" ]; then
+              rm -rf SyncWave
               git clone https://github.com/${{ github.repository }}.git SyncWave
             else
               cd SyncWave
