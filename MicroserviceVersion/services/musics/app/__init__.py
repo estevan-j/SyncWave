@@ -28,37 +28,54 @@ def create_app(config_name=None):
     # Inicializar extensiones
     db.init_app(app)
 
+ 
     # Logging de request básico
     @app.before_request
     def before_request():
         g.request_id = str(uuid.uuid4())
 
-    # Configurar CORS SIMPLE Y DIRECTO
+    # CORS origins
+    cors_origins = [
+        'http://localhost:4200',
+        'http://localhost:8090',
+        'http://syncwave-frontend:4200',
+        'http://syncwave-api-gateway:8080',
+        'http://syncwave-nginx:80'
+    ]
 
-    # Configurar CORS SIMPLE Y DIRECTO
+    # ✅ Configuración CORS completa y robusta
+    from flask_cors import CORS
     CORS(app,
-         origins=[
-             "http://localhost:8090",
-             "http://localhost:4200",
-             "http://syncwave-frontend:4200",
-             "http://syncwave-api-gateway:8080",
-             "http://syncwave-nginx:80"
-         ],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-         supports_credentials=True
+         origins=cors_origins,
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+         supports_credentials=True,
+         max_age=3600  # Cache preflight por 1 hora
     )
 
-    # Manejar OPTIONS antes de cualquier cosa
+    # ✅ Handler adicional para asegurar OPTIONS
     @app.before_request
-    def handle_preflight():
-        if request.method == "OPTIONS":
-            response = jsonify({'status': 'OK'})
-            response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
-            response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
-            response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS")
-            response.headers.add('Access-Control-Allow-Credentials', 'true')
-            return response
+    def handle_options():
+        if request.method == 'OPTIONS':
+            origin = request.headers.get('Origin')
+            if origin in cors_origins:
+                response = app.make_default_options_response()
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With'
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Access-Control-Max-Age'] = '3600'
+                return response
+
+    # ✅ Asegurar CORS en todas las respuestas
+    @app.after_request
+    def after_request(response):
+        origin = request.headers.get('Origin')
+        if origin in cors_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
 
     # Inicializar middleware de métricas
     from app.metrics_middleware import metrics_middleware
