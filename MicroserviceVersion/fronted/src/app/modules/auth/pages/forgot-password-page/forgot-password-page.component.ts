@@ -97,7 +97,6 @@ export class ForgotPasswordPageComponent implements OnInit {
     });
   }
 
-
   onSubmitReset(): void {
     if (this.resetForm.invalid) {
       this.resetForm.markAllAsTouched();
@@ -113,10 +112,8 @@ export class ForgotPasswordPageComponent implements OnInit {
       next: (response: any) => {
         if (response.success) {
           this.showSuccessPopup('Contraseña actualizada', 'Tu contraseña ha sido actualizada correctamente. Redirigiendo al login...');
-          // Mantener loading = true durante la redirección
-          setTimeout(() => {
-            this.router.navigate(['/auth/login']);
-          }, 2000);
+          // Redirigir inmediatamente al login
+          this.router.navigate(['/auth/login']);
         } else {
           this.loading = false;
         }

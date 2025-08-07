@@ -183,16 +183,15 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
    * Cancelar edición
    */
   cancelEdit(): void {
+    console.log('❌ Cancelling edit form');
     this.editingTrack = null;
     this.editForm = {};
+    this.error = null; // Limpiar errores al cancelar
   }
 
   /**
-   * Guardar cambios usando MusicUploadService
+   * Guardar cambios usando MusicUploadService - SOLO METADATOS
    */
-  /**
-  * Guardar cambios usando MusicUploadService - SOLO METADATOS
-  */
   saveEdit(): void {
     if (!this.editingTrack) return;
 
@@ -205,38 +204,40 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
       cover_url: this.editForm.cover_url
     };
 
-    // ✅ USAR updateSongMetadata en lugar de updateSong para solo metadatos
     this.musicUploadService.updateSongMetadata(Number(this.editingTrack._id), updateData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('✅ Song metadata updated successfully:', response);
 
-          if (response.success) {
+          if (response && (response.success !== false)) {
             // ✅ 1. CERRAR el formulario de edición PRIMERO
             this.cancelEdit();
+            console.log('📝 Edit form closed after successful update');
 
-            // ✅ 2. LIMPIAR cualquier mensaje de error
-            this.error = null;
-
-            // ✅ 3. RECARGAR las canciones desde el servidor
+            // ✅ 2. RECARGAR las canciones desde el servidor
             this.loadTracks();
+            console.log('🔄 Tracks reloaded after successful update');
 
-            // ✅ 4. NOTIFICAR a otros componentes que las canciones han cambiado
+            // ✅ 3. NOTIFICAR a otros componentes que las canciones han cambiado
             this.tracksService.refreshTracks();
+            console.log('� Other components notified of track changes');
 
-            console.log('🔄 Form closed and tracks reloaded after successful update');
+            // ✅ 4. Mensaje de éxito (opcional)
+            console.log('✅ Song updated successfully and UI refreshed');
           } else {
-            this.error = response.message || 'Error al actualizar la información de la canción';
+            this.error = response?.message || 'Error al actualizar la información de la canción';
+            console.error('❌ Update failed:', this.error);
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Error updating song metadata:', error);
           this.error = error.error?.message || error.message || 'Error al actualizar la información de la canción';
           // No cerrar el formulario en caso de error para que el usuario pueda reintentarlo
         }
       });
   }
+
   /**
    * Eliminar canción usando MusicUploadService
    */
@@ -251,11 +252,17 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
       this.musicUploadService.deleteSong(Number(track._id))
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
+          next: (response: any) => {
             console.log('✅ Song deleted successfully:', response);
 
-            if (response.success) {
-              // Remover de favoritos primero si está en favoritos
+            if (response && (response.success !== false)) {
+              // ✅ 1. CERRAR cualquier formulario de edición abierto
+              if (this.editingTrack && this.editingTrack._id === track._id) {
+                this.cancelEdit();
+                console.log('📝 Edit form closed after deletion');
+              }
+
+              // ✅ 2. Remover de favoritos si está en favoritos
               if (this.isFavorite(track)) {
                 this.favoritesService.removeFromFavorites(Number(track._id))
                   .pipe(takeUntil(this.destroy$))
@@ -263,24 +270,32 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
                     next: () => {
                       console.log('✅ Song removed from favorites');
                     },
-                    error: (error) => {
+                    error: (error: any) => {
                       console.error('❌ Error removing from favorites:', error);
                     }
                   });
               }
 
-              // Remover de la lista local
-              this.tracks = this.tracks.filter(t => t._id !== track._id);
+              // ✅ 3. RECARGAR las canciones desde el servidor
+              this.loadTracks();
+              console.log('🔄 Tracks reloaded after successful deletion');
 
-              // Notificar que las canciones han cambiado
+              // ✅ 4. NOTIFICAR a otros componentes que las canciones han cambiado
               this.tracksService.refreshTracks();
+              console.log('📡 Other components notified of track deletion');
+
+              // ✅ 5. Limpiar errores
+              this.error = null;
+
+              console.log('✅ Song deleted successfully and UI refreshed');
             } else {
-              this.error = response.message || 'Error al eliminar la canción';
+              this.error = response?.message || 'Error al eliminar la canción';
+              console.error('❌ Deletion failed:', this.error);
             }
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('❌ Error deleting song:', error);
-            this.error = error.message || 'Error al eliminar la canción';
+            this.error = error.error?.message || error.message || 'Error al eliminar la canción';
           }
         });
     }
