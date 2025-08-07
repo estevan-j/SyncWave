@@ -1,10 +1,7 @@
 services:
   # Servicio de Usuarios
   users-service:
-    build:
-      context: ./services/users
-      dockerfile: Dockerfile
-    image: syncwave-users-service:latest
+    image: estevanb/users-service:latest
     container_name: syncwave-users-service
     env_file:
       - ./services/users/.env
@@ -25,10 +22,7 @@ services:
 
   # Servicio de Música
   music-service:
-    build:
-      context: ./services/musics
-      dockerfile: Dockerfile
-    image: syncwave-music-service:latest
+    image: estevanb/musics-service:latest
     container_name: syncwave-music-service
     env_file:
       - ./services/musics/.env
