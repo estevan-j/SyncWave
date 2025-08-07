@@ -13,17 +13,15 @@ RUN adduser --disabled-password --gecos '' appuser
 
 WORKDIR /app
 
-COPY services/users/requirements.txt .
+# Copia requirements.txt primero para aprovechar el cache de Docker
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copia el código de la aplicación
+COPY app/ ./app/
+COPY run.py ./
 
-COPY shared/logging ./shared/logging
-RUN pip install -e ./shared/logging
-
-# Copia el código de la app y el run.py fuera de /app
-COPY services/users/app/ ./app/
-COPY services/users/run.py ./
-
+# Cambia la propiedad de los archivos al usuario appuser
 RUN chown -R appuser:appuser /app
 USER appuser
 

@@ -1,23 +1,23 @@
-# Flask y extensiones
-Flask==2.3.3
+# Documentación interactiva
+flasgger==0.9.5
+Flask==2.2.5
 Flask-SQLAlchemy==3.0.5
 Flask-CORS==4.0.0
+
 # Validación de datos
 pydantic==2.4.2
 email-validator==2.1.1
+
 # Supabase cliente
 supabase==1.2.0
 
 # Variables de entorno
 python-dotenv==1.0.0
 
-# ✅ Dependencias para librerías compartidas
-# Logging
-# (Se instalan via -e /app/shared/logging)
-
-# Monitoring (si lo implementas)
+# Monitoring
 prometheus-client==0.17.1
 psutil==5.9.5
 
-# ✅ IMPORTANTE: No incluir las librerías compartidas aquí
-# Se instalan directamente desde /app/shared/
+# WebSocket support (para funcionalidad de chat en tiempo real)
+flask-socketio==5.3.6
+python-socketio==5.9.0

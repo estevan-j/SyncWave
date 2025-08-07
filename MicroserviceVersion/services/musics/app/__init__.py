@@ -1,18 +1,20 @@
 """
 Music Microservice - Configuración básica optimizada
 """
-from flask import Flask, jsonify, g
+from flask import Flask, jsonify, g, request, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from app.config import get_config
 from app.extensions import db
-from microservice_logging import get_logger, configure_root_logger, setup_request_logging
 from app.controllers.music_controller import music_bp
+import os
+import logging
+import uuid
 
 
 # Configurar logging básico
-configure_root_logger()
-app_logger = get_logger("musics-app")
+logging.basicConfig(level=logging.INFO)
+app_logger = logging.getLogger("musics-app")
 
 def create_app(config_name=None):
     """Create and configure the Flask application instance"""
@@ -27,17 +29,49 @@ def create_app(config_name=None):
     db.init_app(app)
 
     # Logging de request básico
-    setup_request_logging(app)
+    @app.before_request
+    def before_request():
+        g.request_id = str(uuid.uuid4())
 
-    # Configurar CORS básico
+    # Configurar CORS SIMPLE Y DIRECTO
+
+    # Configurar CORS SIMPLE Y DIRECTO
     CORS(app,
-         origins=app.config.get('CORS_ORIGINS', ['*']),
-         supports_credentials=True,
-         allow_headers=['Content-Type', 'Authorization'])
+         origins=[
+             "http://localhost:8090",
+             "http://localhost:4200",
+             "http://syncwave-frontend:4200",
+             "http://syncwave-api-gateway:8080",
+             "http://syncwave-nginx:80"
+         ],
+         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+         supports_credentials=True
+    )
 
-    # Registrar blueprints (descomenta y ajusta cuando tengas blueprints)
-    # from app.controllers.music_controller import music_bp
+    # Manejar OPTIONS antes de cualquier cosa
+    @app.before_request
+    def handle_preflight():
+        if request.method == "OPTIONS":
+            response = jsonify({'status': 'OK'})
+            response.headers.add("Access-Control-Allow-Origin", "http://localhost:4200")
+            response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization")
+            response.headers.add('Access-Control-Allow-Methods', "GET,PUT,POST,DELETE,OPTIONS")
+            response.headers.add('Access-Control-Allow-Credentials', 'true')
+            return response
+
+    # Inicializar middleware de métricas
+    from app.metrics_middleware import metrics_middleware
+    metrics_middleware.init_app(app)
+
+    # Registrar blueprints
     app.register_blueprint(music_bp)
+
+    # Add route to serve uploaded files
+    @app.route('/uploads/<filename>')
+    def uploaded_file(filename):
+        uploads_dir = os.path.join(os.getcwd(), 'uploads')
+        return send_from_directory(uploads_dir, filename)
 
     # Error handlers simplificados
     setup_basic_error_handlers(app)
@@ -64,14 +98,12 @@ def create_app(config_name=None):
 
 def setup_basic_error_handlers(app):
     """Error handlers básicos para práctica"""
-    error_logger = get_logger("error_handler")
+    error_logger = logging.getLogger("error_handler")
 
     @app.errorhandler(400)
     def bad_request(error):
         request_id = getattr(g, 'request_id', 'unknown')
-        error_logger.warning(f"Bad request: {str(error)}", extra={
-            'custom_request_id': request_id
-        })
+        error_logger.warning(f"Bad request: {str(error)}")
         return jsonify({
             'error': 'Bad request',
             'message': str(error),
@@ -81,9 +113,7 @@ def setup_basic_error_handlers(app):
     @app.errorhandler(401)
     def unauthorized(error):
         request_id = getattr(g, 'request_id', 'unknown')
-        error_logger.warning(f"Unauthorized: {str(error)}", extra={
-            'custom_request_id': request_id
-        })
+        error_logger.warning(f"Unauthorized: {str(error)}")
         return jsonify({
             'error': 'Unauthorized',
             'message': str(error),
@@ -102,11 +132,10 @@ def setup_basic_error_handlers(app):
     @app.errorhandler(500)
     def internal_error(error):
         request_id = getattr(g, 'request_id', 'unknown')
-        error_logger.error(f"Internal error: {str(error)}", extra={
-            'custom_request_id': request_id
-        })
+        error_logger.error(f"Internal error: {str(error)}")
         db.session.rollback()
         return jsonify({
             'error': 'Internal server error',
             'message': str(error),
-            'request_id': request_id}), 500
+            'request_id': request_id
+        }), 500

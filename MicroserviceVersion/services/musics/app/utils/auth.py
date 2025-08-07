@@ -11,7 +11,7 @@ def verify_jwt(token):
             token,
             SUPABASE_JWT_SECRET,
             algorithms=["HS256"],
-            audience="authenticated"  # O el valor real de tu proyecto Supabase
+            audience="authenticated"
         )
         return payload
     except jwt.ExpiredSignatureError:
@@ -23,6 +23,10 @@ def verify_jwt(token):
 def require_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # NUNCA interceptar OPTIONS
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+            
         auth_header = request.headers.get('Authorization', None)
         if not auth_header or not auth_header.startswith('Bearer '):
             return jsonify({'error': 'Authorization header missing or invalid'}), 401
@@ -30,6 +34,14 @@ def require_auth(f):
         payload = verify_jwt(token)
         if not payload:
             return jsonify({'error': 'Invalid or expired token'}), 401
-        g.user = payload  # Puedes guardar el payload en g si lo necesitas
+        g.user = payload
+        return f(*args, **kwargs)
+    return decorated
+
+# Decorador temporal sin auth para testing
+def no_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        g.user = {'id': 'test-user', 'email': 'test@example.com'}
         return f(*args, **kwargs)
     return decorated

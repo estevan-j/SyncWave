@@ -15,11 +15,14 @@ export class AuthService {
     ) { }
 
     register(email: string, password: string): Observable<any> {
-        return this.apiService.post('/api/users', { email, password })
+        return this.apiService.post('/api/auth/signup', { email, password })
             .pipe(
                 map((response: any) => {
-                    if (response.success) {
-                        this.userService.setCurrentUser(response.data);
+                    if (response.access_token) {
+                        this.setToken(response.access_token);
+                        if (response.user) {
+                            this.userService.setCurrentUser(response.user);
+                        }
                     }
                     return response;
                 })
@@ -27,11 +30,14 @@ export class AuthService {
     }
 
     login(email: string, password: string): Observable<any> {
-        return this.apiService.post('/api/users/login', { email, password })
+        return this.apiService.post('/api/auth/login', { email, password })
             .pipe(
                 map((response: any) => {
-                    if (response.success) {
-                        this.userService.setCurrentUser(response.data);
+                    if (response.access_token) {
+                        this.setToken(response.access_token);
+                        if (response.user) {
+                            this.userService.setCurrentUser(response.user);
+                        }
                     }
                     return response;
                 })
@@ -39,21 +45,56 @@ export class AuthService {
     }
 
     logout(): void {
-        this.userService.logout();
+        const token = this.getToken();
+        if (token) {
+            // Usar el método postWithAuth si existe, o modificar ApiService
+            this.apiService.postWithAuth('/api/auth/logout', {}, token).subscribe({
+                next: () => {
+                    this.clearToken();
+                    this.userService.logout();
+                },
+                error: () => {
+                    // Aunque falle el logout en el servidor, limpiamos el token local
+                    this.clearToken();
+                    this.userService.logout();
+                }
+            });
+        } else {
+            this.userService.logout();
+        }
     }
 
     isAuthenticated(): boolean {
-        return this.userService.isAuthenticated();
-    } getCurrentUser(): any {
+        const token = this.getToken();
+        return !!token && this.userService.isAuthenticated();
+    }
+
+    getCurrentUser(): any {
         return this.userService.getCurrentUser();
+    }
+
+    // Token management methods
+    getToken(): string | null {
+        return localStorage.getItem('access_token');
+    }
+
+    setToken(token: string): void {
+        localStorage.setItem('access_token', token);
+    }
+
+    clearToken(): void {
+        localStorage.removeItem('access_token');
     }
 
     // Password recovery methods
     verifyEmail(email: string): Observable<any> {
-        return this.apiService.post('/api/users/verify-email', { email });
+        return this.apiService.post('/api/auth/verify-email', { email });
     }
 
     resetPassword(email: string, newPassword: string): Observable<any> {
-        return this.apiService.post('/api/users/reset-password', { email, newPassword });
+        return this.apiService.post('/api/auth/reset-password', {
+            email,
+            new_password: newPassword
+        });
     }
 }

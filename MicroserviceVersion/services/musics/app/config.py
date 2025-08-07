@@ -27,9 +27,9 @@ class Config:
     @staticmethod
     def init_app(app):
         """Inicializar configuración específica de la app"""
-        # ✅ Usar la librería compartida
-        from microservice_logging import configure_root_logger
-        configure_root_logger()
+        # Configuración básica de logging
+        import logging
+        logging.basicConfig(level=logging.WARNING)
 
 class DevelopmentConfig(Config):
     """Development configuration"""

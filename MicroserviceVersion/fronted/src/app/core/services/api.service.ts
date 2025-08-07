@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../environments/environment'; // Asegúrate de que la ruta sea correcta
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly API_BASE_URL = 'http://localhost:5000'; // Ajusta esta URL según tu backend
+  private readonly API_BASE_URL = environment.apiUrl; // Usa la variable del environment
 
   constructor(private http: HttpClient) { }
 
@@ -23,5 +24,39 @@ export class ApiService {
 
   delete(endpoint: string) {
     return this.http.delete(`${this.API_BASE_URL}${endpoint}`);
+  }
+
+  postWithAuth(endpoint: string, body: any, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.post(`${this.API_BASE_URL}${endpoint}`, body, { headers });
+  }
+
+  getWithAuth(endpoint: string, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.get(`${this.API_BASE_URL}${endpoint}`, { headers });
+  }
+
+  putWithAuth(endpoint: string, body: any, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+
+    return this.http.put(`${this.API_BASE_URL}${endpoint}`, body, { headers });
+  }
+
+  deleteWithAuth(endpoint: string, token: string) {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.delete(`${this.API_BASE_URL}${endpoint}`, { headers });
   }
 }

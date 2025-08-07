@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../../core/services/api.service';
+import { AuthService } from '../../../../core/services/auth.service'; // Cambia ApiService por AuthService
 
 @Component({
   selector: 'app-register-page',
@@ -22,7 +22,7 @@ export class RegisterPageComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private apiService: ApiService
+    private authService: AuthService // Usa AuthService
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -48,7 +48,7 @@ export class RegisterPageComponent implements OnInit {
 
     const { email, password } = this.registerForm.value;
 
-    this.apiService.post('/api/users', { email, password })
+    this.authService.register(email, password)
       .subscribe({
         next: (response: any) => {
           this.showSuccessPopup('Registro exitoso', 'Tu cuenta ha sido creada correctamente. Ahora puedes iniciar sesión.');
@@ -70,7 +70,6 @@ export class RegisterPageComponent implements OnInit {
       });
   }
 
-  // Resto de los métodos permanecen igual...
   goToLogin(): void {
     this.router.navigate(['/auth/login']);
   }

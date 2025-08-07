@@ -7,7 +7,7 @@ import { OrderlistPipe } from '@shared/pipe/orderlist.pipe';
 import { TracksService } from '@core/services/tracks.service';
 import { MultimediaService } from '@core/services/multimedia.service';
 import { FavoritesService } from '@core/services/favorites.service';
-import { MusicUploadService } from '@core/services/music-upload.service';
+import { MusicUploadService, SongUploadData } from '@core/services/music-upload.service';
 import { Subject, takeUntil, combineLatest, Observable } from 'rxjs';
 
 @Component({
@@ -37,7 +37,9 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
     private favoritesService: FavoritesService,
     private musicUploadService: MusicUploadService,
     private http: HttpClient
-  ) { } ngOnInit(): void {
+  ) { }
+
+  ngOnInit(): void {
     console.log('🎵 PlayListBodyComponent initialized - Loading tracks from API');
     this.loadTracks();
 
@@ -129,6 +131,7 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
+
   // ✅ Método para formatear fecha
   formatDate(dateString: string | undefined): string {
     if (!dateString) return 'Sin fecha';
@@ -180,60 +183,63 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
    * Cancelar edición
    */
   cancelEdit(): void {
+    console.log('❌ Cancelling edit form');
     this.editingTrack = null;
     this.editForm = {};
+    this.error = null; // Limpiar errores al cancelar
   }
 
   /**
-   * Guardar cambios (solo metadatos, sin archivo)
+   * Guardar cambios usando MusicUploadService - SOLO METADATOS
    */
   saveEdit(): void {
     if (!this.editingTrack) return;
 
     console.log('💾 Saving metadata changes for:', this.editingTrack.name);
 
-    this.updateSongMetadata(Number(this.editingTrack._id), {
+    const updateData: Partial<SongUploadData> = {
       title: this.editForm.title,
       artist: this.editForm.artist,
       album: this.editForm.album,
       cover_url: this.editForm.cover_url
-    })
+    };
+
+    this.musicUploadService.updateSongMetadata(Number(this.editingTrack._id), updateData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           console.log('✅ Song metadata updated successfully:', response);
 
-          // Actualizar en la lista local
-          const index = this.tracks.findIndex(t => t._id === this.editingTrack!._id);
-          if (index !== -1) {
-            this.tracks[index] = {
-              ...this.tracks[index],
-              name: this.editForm.title,
-              artist: this.editForm.artist,
-              album: this.editForm.album,
-              cover_url: this.editForm.cover_url
-            };
-          }
+          if (response && (response.success !== false)) {
+            // ✅ 1. CERRAR el formulario de edición PRIMERO
+            this.cancelEdit();
+            console.log('📝 Edit form closed after successful update');
 
-          this.cancelEdit();
+            // ✅ 2. RECARGAR las canciones desde el servidor
+            this.loadTracks();
+            console.log('🔄 Tracks reloaded after successful update');
+
+            // ✅ 3. NOTIFICAR a otros componentes que las canciones han cambiado
+            this.tracksService.refreshTracks();
+            console.log('� Other components notified of track changes');
+
+            // ✅ 4. Mensaje de éxito (opcional)
+            console.log('✅ Song updated successfully and UI refreshed');
+          } else {
+            this.error = response?.message || 'Error al actualizar la información de la canción';
+            console.error('❌ Update failed:', this.error);
+          }
         },
         error: (error: any) => {
           console.error('❌ Error updating song metadata:', error);
-          this.error = 'Error al actualizar la información de la canción';
+          this.error = error.error?.message || error.message || 'Error al actualizar la información de la canción';
+          // No cerrar el formulario en caso de error para que el usuario pueda reintentarlo
         }
       });
   }
 
   /**
-   * Actualizar solo metadatos de la canción (sin archivo)
-   */
-  private updateSongMetadata(songId: number, metadata: any): Observable<any> {
-    const API_URL = 'http://localhost:5000/api/music';
-    return this.http.put(`${API_URL}/songs/${songId}/metadata`, metadata);
-  }
-
-  /**
-   * Eliminar canción completamente
+   * Eliminar canción usando MusicUploadService
    */
   deleteSong(track: TrackModel, event: Event): void {
     event.stopPropagation();
@@ -249,27 +255,47 @@ export class PlayListBodyComponent implements OnInit, OnDestroy {
           next: (response: any) => {
             console.log('✅ Song deleted successfully:', response);
 
-            // Remover de favoritos primero si está en favoritos
-            if (this.isFavorite(track)) {
-              this.favoritesService.removeFromFavorites(Number(track._id))
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                  next: () => {
-                    console.log('✅ Song removed from favorites');
-                  },
-                  error: (error: any) => {
-                    console.error('❌ Error removing from favorites:', error);
-                  }
-                });
-            }            // Remover de la lista local
-            this.tracks = this.tracks.filter(t => t._id !== track._id);
+            if (response && (response.success !== false)) {
+              // ✅ 1. CERRAR cualquier formulario de edición abierto
+              if (this.editingTrack && this.editingTrack._id === track._id) {
+                this.cancelEdit();
+                console.log('📝 Edit form closed after deletion');
+              }
 
-            // Notificar que las canciones han cambiado
-            this.tracksService.refreshTracks();
+              // ✅ 2. Remover de favoritos si está en favoritos
+              if (this.isFavorite(track)) {
+                this.favoritesService.removeFromFavorites(Number(track._id))
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: () => {
+                      console.log('✅ Song removed from favorites');
+                    },
+                    error: (error: any) => {
+                      console.error('❌ Error removing from favorites:', error);
+                    }
+                  });
+              }
+
+              // ✅ 3. RECARGAR las canciones desde el servidor
+              this.loadTracks();
+              console.log('🔄 Tracks reloaded after successful deletion');
+
+              // ✅ 4. NOTIFICAR a otros componentes que las canciones han cambiado
+              this.tracksService.refreshTracks();
+              console.log('📡 Other components notified of track deletion');
+
+              // ✅ 5. Limpiar errores
+              this.error = null;
+
+              console.log('✅ Song deleted successfully and UI refreshed');
+            } else {
+              this.error = response?.message || 'Error al eliminar la canción';
+              console.error('❌ Deletion failed:', this.error);
+            }
           },
           error: (error: any) => {
             console.error('❌ Error deleting song:', error);
-            this.error = 'Error al eliminar la canción';
+            this.error = error.error?.message || error.message || 'Error al eliminar la canción';
           }
         });
     }

@@ -3,13 +3,14 @@ from sqlalchemy import Column, Integer, String, TIMESTAMP, func
 
 class Music(db.Model):
     __tablename__ = 'songs'
+    __table_args__ = {'schema': 'music'} 
 
     id = Column(Integer, primary_key=True)
     title = Column(String(200), nullable=False)
     artist = Column(String(100), nullable=False)
     album = Column(String(100))
     duration = Column(Integer)
-    audio_url = Column(String(500))
+    url = Column(String(500))
     cover_url = Column(String(500))
     artist_name = Column(String(100))
     artist_nickname = Column(String(100))
