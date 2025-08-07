@@ -28,45 +28,57 @@ def create_app(config_name=None):
     app.config.from_object(config)
     config.init_app(app)
 
-    # Configurar CORS MEJORADO - antes de SocketIO
-    
-    cors_origins = app.config.get('CORS_ORIGINS', [
+    # CORS origins
+    cors_origins = [
         'http://localhost:4200',
-        'http://localhost:8090',
+        'http://localhost:8090',  
         'http://syncwave-frontend:4200',
         'http://syncwave-api-gateway:8080',
         'http://syncwave-nginx:80'
-    ])
-    if isinstance(cors_origins, str):
-        cors_origins = [origin.strip() for origin in cors_origins.split(',')]
-    
-    CORS(app,
+    ]
+
+    # ✅ Configuración CORS completa y robusta
+    from flask_cors import CORS
+    CORS(app, 
          origins=cors_origins,
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-         supports_credentials=True
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+         allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+         supports_credentials=True,
+         max_age=3600  # Cache preflight por 1 hora
     )
-    # Agregar handler explícito para OPTIONS (preflight) ANTES de SocketIO
 
+    # ✅ Handler adicional para asegurar OPTIONS
     @app.before_request
-    def handle_preflight():
-        if request.method == "OPTIONS":
-            response = make_response()
-            response.headers.add("Access-Control-Allow-Origin",
-                                 request.headers.get('Origin', '*'))
-            response.headers.add('Access-Control-Allow-Headers',
-                                 "Content-Type,Authorization,X-Requested-With")
-            response.headers.add(
-                'Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,OPTIONS")
-            response.headers.add('Access-Control-Allow-Credentials', 'true')
-            return response
+    def handle_options():
+        if request.method == 'OPTIONS':
+            origin = request.headers.get('Origin')
+            if origin in cors_origins:
+                response = app.make_default_options_response()
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Requested-With'
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Access-Control-Max-Age'] = '3600'
+                return response
 
-    # Initialize SocketIO DESPUÉS de CORS y preflight handler
+    # ✅ Asegurar CORS en todas las respuestas
+    @app.after_request
+    def after_request(response):
+        origin = request.headers.get('Origin')
+        if origin in cors_origins:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
+    # Configurar SocketIO
     socketio.init_app(app,
                       cors_allowed_origins=cors_origins,
-                      logger=False,  # Reducir logs de SocketIO
+                      logger=False,
                       engineio_logger=False)
 
+    # ...resto del código...
+
+    
     # Inicializar middleware de métricas
     from app.metrics_middleware import metrics_middleware
     metrics_middleware.init_app(app)

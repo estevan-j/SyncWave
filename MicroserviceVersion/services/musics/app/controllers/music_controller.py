@@ -12,6 +12,25 @@ music_bp = Blueprint('music', __name__, url_prefix='/api/musics')
 # Logger básico para el controlador
 logger = logging.getLogger("music_controller")
 
+
+
+
+
+# GET /musics/<int:music_id>
+@music_bp.route('/<int:music_id>', methods=['GET'])
+@require_auth
+def get_musics_by_id(music_id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    try:
+        music = MusicRepository.get_music_by_id(music_id)
+        if not music:
+            logger.warning(f"Music not found: {music_id}", extra={'custom_request_id': request_id})
+            return jsonify({'error': 'Music not found', 'request_id': request_id}), 404
+        return jsonify(MusicResponse.from_orm(music).dict()), 200
+    except Exception as e:
+        logger.error(f"Error fetching music by id: {str(e)}", extra={'custom_request_id': request_id})
+        return jsonify({'error': 'Failed to fetch music', 'details': str(e), 'request_id': request_id}), 500
+
 # GET /musics - SIN AUTH TEMPORALMENTE
 @music_bp.route('/', methods=['GET', 'OPTIONS'])
 @require_auth
@@ -31,21 +50,6 @@ def get_all_musics():
     except Exception as e:
         logger.error(f"Error fetching all musics: {str(e)}", extra={'custom_request_id': request_id})
         return jsonify({'error': 'Failed to fetch musics', 'details': str(e), 'request_id': request_id}), 500
-
-# GET /musics/<int:music_id>
-@music_bp.route('/<int:music_id>', methods=['GET'])
-@require_auth
-def get_musics_by_id(music_id):
-    request_id = getattr(g, 'request_id', 'unknown')
-    try:
-        music = MusicRepository.get_music_by_id(music_id)
-        if not music:
-            logger.warning(f"Music not found: {music_id}", extra={'custom_request_id': request_id})
-            return jsonify({'error': 'Music not found', 'request_id': request_id}), 404
-        return jsonify(MusicResponse.from_orm(music).dict()), 200
-    except Exception as e:
-        logger.error(f"Error fetching music by id: {str(e)}", extra={'custom_request_id': request_id})
-        return jsonify({'error': 'Failed to fetch music', 'details': str(e), 'request_id': request_id}), 500
 
 # POST /musics
 @music_bp.route('/', methods=['POST'])

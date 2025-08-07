@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment';
     providedIn: 'root'
 })
 export class TracksService {
-    private readonly API_URL = `${environment.apiUrl}/api/musics`;
+    private readonly API_URL = `${environment.apiUrlMusic}/api/musics`;
 
     private tracksRefreshSubject = new BehaviorSubject<boolean>(false);
     public tracksRefresh$ = this.tracksRefreshSubject.asObservable();

@@ -10,8 +10,6 @@ services:
       - ./services/users/.env
     environment:
       - NODE_ENV=production
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_KEY=${SUPABASE_KEY}
       - PORT=5000
     ports:
       - "5000:5000"
@@ -36,11 +34,9 @@ services:
       - ./services/musics/.env
     environment:
       - NODE_ENV=production
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_KEY=${SUPABASE_KEY}
       - PORT=5001
     ports:
-      - "5001:5001"
+      - "5001:5000"
     networks:
       - syncwave-network
     healthcheck:
@@ -51,26 +47,6 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-  # API Gateway
-  api-gateway:
-    image: nginx:alpine
-    container_name: syncwave-api-gateway
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./api-gateway/api-gateway.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - users-service
-      - music-service
-    networks:
-      - syncwave-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 20s
-    restart: unless-stopped
 
   # Frontend Angular
   frontend:
@@ -80,11 +56,8 @@ services:
     container_name: syncwave-frontend
     environment:
       - NODE_ENV=production
-      - API_GATEWAY_URL=http://syncwave-api-gateway:8080
     ports:
       - "4200:4200"
-    depends_on:
-      - api-gateway
     networks:
       - syncwave-network
     healthcheck:
@@ -95,23 +68,58 @@ services:
       start_period: 40s
     restart: unless-stopped
 
+  # Prometheus para monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: syncwave-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - syncwave-network
+    restart: unless-stopped
+
+  # Grafana para visualización
+  grafana:
+    image: grafana/grafana:latest
+    container_name: syncwave-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+    networks:
+      - syncwave-network
+    restart: unless-stopped
   # Nginx Load Balancer
   nginx:
     image: nginx:alpine
     container_name: syncwave-nginx
     ports:
       - "8090:80"
-      - "8443:443"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf
-      - ./gateway/ssl:/etc/nginx/ssl
+    # ✅ Solo depende del frontend
     depends_on:
-      - frontend
-      - api-gateway
+      frontend:
+        condition: service_healthy
     networks:
       - syncwave-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/lb-health || exit 1"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/lb-health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -121,3 +129,8 @@ services:
 networks:
   syncwave-network:
     driver: bridge
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local

@@ -1,6 +1,7 @@
 export const environment = {
-    production: true,
-    apiUrl: 'http://localhost:8090', // URL del API Gateway en producción (ajusta si usas Nginx o dominio público)
+    production: false,
+    apiUrl: 'http://localhost:5000',
+    apiUrlMusic: 'http://localhost:5001', // URL única del API Gateway para todos los servicios
     apiEndpoints: {
         auth: {
             login: '/api/auth/login',

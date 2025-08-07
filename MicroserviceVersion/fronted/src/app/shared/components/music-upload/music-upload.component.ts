@@ -132,7 +132,7 @@ export class MusicUploadComponent implements OnInit, OnDestroy {
         formData.append('file', file);
 
         // Usar la URL base del environment
-        const uploadUrl = `${environment.apiUrl}/musics/upload`;
+        const uploadUrl = `${environment.apiUrlMusic}/api/musics/upload`;
 
         this.http.post<any>(uploadUrl, formData, {
             reportProgress: true,

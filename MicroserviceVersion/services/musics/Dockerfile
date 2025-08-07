@@ -15,17 +15,19 @@ RUN adduser --disabled-password --gecos '' appuser
 
 WORKDIR /app
 
+# Copia requirements.txt primero para aprovechar el cache de Docker
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia el código de la app y el run.py fuera de /app
+# Copia el código de la aplicación
 COPY app/ ./app/
 COPY run.py ./
 
+# Cambia la propiedad de los archivos al usuario appuser
 RUN chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 5001
+EXPOSE 5000
 
 ENV FLASK_APP=run.py \
     FLASK_ENV=production \
@@ -34,6 +36,6 @@ ENV FLASK_APP=run.py \
     LOG_LEVEL=WARNING
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:5001/health || exit 1
+  CMD curl -f http://localhost:5000/health || exit 1
 
 CMD ["python", "run.py"]
