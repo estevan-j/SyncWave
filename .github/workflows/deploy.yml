@@ -66,6 +66,10 @@ jobs:
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           script: |
+            # Crear directorios si no existen
+            mkdir -p ${{ env.PROJECT_PATH }}/services/users
+            mkdir -p ${{ env.PROJECT_PATH }}/services/musics
+
             # Crear .env para users service
             cat > ${{ env.PROJECT_PATH }}/services/users/.env << 'EOF'
             ${{ secrets.USERS_ENV }}
@@ -80,7 +84,6 @@ jobs:
             echo "Archivos .env creados:"
             ls -la ${{ env.PROJECT_PATH }}/services/users/.env
             ls -la ${{ env.PROJECT_PATH }}/services/musics/.env
-
       # Desplegar aplicación
       - name: Deploy aplicación con Docker Compose
         uses: appleboy/ssh-action@v1.0.3
